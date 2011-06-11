@@ -1,7 +1,7 @@
 <?php
 
 class SQL_Maker_Condition {
-    protected $sql, $bind, $quote_char, $name_sep;
+    public $sql, $bind, $quote_char, $name_sep;
 
     public function __construct($args = array()) {
         $this->sql =

@@ -6,7 +6,7 @@ require_once('SQL/Maker/Condition.php');
 require_once('SQL/Maker/Util.php');
 
 class SQL_Maker {
-    protected $quote_char, $name_sep, $new_line, $driver, $select_class;
+    public $quote_char, $name_sep, $new_line, $driver, $select_class;
 
     public function __construct($args) {
         if ( ! array_key_exists('driver', $args) ) {
@@ -21,6 +21,8 @@ class SQL_Maker {
             } else {
                 $this->quote_char = '"';
             }
+        } else {
+            $this->quote_char = $args['quote_char'];
         }
 
         $this->select_class =
@@ -41,15 +43,15 @@ class SQL_Maker {
         $this->driver = $driver;
     }
 
-    private function newCondition() {
+    public function newCondition() {
         return new SQL_Maker_Condition(array(
-                                             quote_char => $this->quote_char,
-                                             name_sep   => $this->name_sep,
+                                             'quote_char' => $this->quote_char,
+                                             'name_sep'   => $this->name_sep,
                                              ));
     }
 
-    private function newSelect($args) {
-        $class = $this->select_class();
+    public function newSelect($args = array()) {
+        $class = $this->select_class;
         return new $class(array_merge(
                                       array(
                                             'name_sep'   => $this->name_sep,
@@ -109,7 +111,7 @@ class SQL_Maker {
         return array($sql, $bind_columns);
     }
 
-    private function quote($label) {
+    public function quote($label) {
         return SQL_Maker_Util::quoteIdentifier($label, $this->quote_char, $this->name_sep);
     }
 
@@ -162,7 +164,7 @@ class SQL_Maker {
         return array($sql, $bind_columns);
     }
 
-    private function makeWhereClause($where) {
+    public function makeWhereClause($where) {
         $w = new SQL_Maker_Condition(array(
                                            'quote_char' => $this->quote_char,
                                            'name_sep'   => $this->name_sep
@@ -181,18 +183,18 @@ class SQL_Maker {
     }
 
     // list($stmt, $bind) = $sql->select($table, $fields, $where, $opt)
-    public function select($table, $fields, $where, $opt)  {
+    public function select($table, $fields, $where = array(), $opt = array())  {
         $stmt = $this->selectQuery($table, $fields, $where, $opt);
         return array($stmt->as_sql(), $stmt->bind());
     }
 
-    private function selectQuery($table, $fields, $where, $opt) {
+    public function selectQuery($table, $fields, $where = array(), $opt = array()) {
         if ( ! is_array($fields) ) {
             throw new Exception("SQL::Maker::select_query: $fields should be array");
         }
 
         $stmt = $this->newSelect(array(
-                                       select => $fields,
+                                       'select' => $fields,
                                        ));
 
         if ( ! is_array($table) ) {
@@ -216,7 +218,9 @@ class SQL_Maker {
 
         if ( $where ) {
             for ($i = 0; $i < count($where); $i++) {
-                $stmt->add_where($where[ $i ]);
+                $col = $where[$i][0];
+                $val = $where[$i][1];
+                $stmt->addWhere($col, $val);
             }
         }
 
@@ -224,9 +228,13 @@ class SQL_Maker {
             $o = $opt['order_by'];
             if ( is_array( $o ) ) {
                 for ($i = 0; $i < count($o); $i++) {
-                    // Skinny-ish array(array(foo => 'DESC'), array(bar => 'ASC'))
-                    // just array('foo DESC', 'bar ASC')
-                    $stmt->addOrderBy($o[$i]);
+                    if ( is_array($o[$i]) ) {
+                        // Skinny-ish array(array(foo => 'DESC'), array(bar => 'ASC'))
+                        $stmt->addOrderBy($o[$i][0], $o[$i][1]);
+                    } else {
+                        // just array('foo DESC', 'bar ASC')
+                        $stmt->addOrderBy($o[$i]);
+                    }
                 }
             } else {
                 // just 'foo DESC, bar ASC'

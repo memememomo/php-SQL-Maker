@@ -1,8 +1,9 @@
 <?php
+require_once('SQL/Maker/Util.php');
 
 class SQL_Maker_Select {
     public $prefix, $new;
-    private $distinct, $for_update, $quote_char, $name_sep, $new_line, $offset, $limit;
+    public $distinct, $for_update, $quote_char, $name_sep, $new_line, $offset, $limit, $where, $having, $subqueries;
 
     public function offset($offset) {
         if ($offset) {
@@ -20,26 +21,33 @@ class SQL_Maker_Select {
         }
     }
 
+    public function initArg($name, $args, $default) {
+        $this->$name =
+            array_key_exists($name, $args)
+            ? $args[ $name ]
+            : $default;
+    }
+
     public function __construct($args) {
-        $this->select = array();
-        $this->select_map = array();
-        $this->select_map_reverse = array();
-        $this->from = array();
-        $this->joins = array();
-        $this->index_hint = array();
-        $this->group_by = array();
-        $this->order_by = array();
-
-
-        $this->distinct = 0;
-        $this->prefix = 'SELECT ';
-        $this->new_line = "\n";
+        $this->initArg('select', $args, array());
+        $this->initArg('select_map', $args, array());
+        $this->initArg('select_map_reverse', $args, array());
+        $this->initArg('from', $args, array());
+        $this->initArg('joins', $args, array());
+        $this->initArg('index_hint', $args, array());
+        $this->initArg('group_by', $args, array());
+        $this->initArg('order_by', $args, array());
+        $this->initArg('prefix', $args, 'SELECT ');
+        $this->initArg('distinct', $args, 0);
+        $this->initArg('quote_char', $args, '`');
+        $this->initArg('name_sep', $args, ".");
+        $this->initArg('new_line', $args, "\n");
     }
 
     public function new_condition() {
         return new SQL_Maker_Condition(array(
-                                             quote_char => $this->quote_char,
-                                             name_sep   => $this->name_sep,
+                                             'quote_char' => $this->quote_char,
+                                             'name_sep'   => $this->name_sep,
                                              )
                                        );
     }
@@ -74,7 +82,7 @@ class SQL_Maker_Select {
         return $this;
     }
 
-    public function addFrom($table, $alias) {
+    public function addFrom($table, $alias = '') {
         if ( is_object( $table ) && method_exists( $table, 'as_sql' ) ) {
             $this->subqueries[] = $table->bind;
             $this->from[] = array('('.$table->as_sql().')', $alias);
@@ -120,11 +128,11 @@ class SQL_Maker_Select {
     }
 
     private function quote($label) {
-        if ( ! is_array($label) ) {
+        if ( is_array($label) ) {
             return $label;
         }
 
-        return SQL_Maker_Util::quote_identifier($label, $this->quote_char, $this->name_sep);
+        return SQL_Maker_Util::quoteIdentifier($label, $this->quote_char, $this->name_sep);
     }
 
     public function asSql() {
@@ -137,8 +145,12 @@ class SQL_Maker_Select {
 
             $select_list = array();
             foreach ($this->select as $s) {
-                $alias = $this->select_map[ $s ];
-                if ( !$alias ) {
+                $alias =
+                    array_key_exists($s, $this->select_map)
+                    ? $this->select_map[ $s ]
+                    : '';
+
+                if ( ! $alias ) {
                     $select_list[] = $this->quote($s);
                 } else if ( $alias && pref_match("/(^|\.)$alias/", $s)  ) {
                     $select_list[] = $this->quote($s);
@@ -150,7 +162,7 @@ class SQL_Maker_Select {
             $sql .= implode(', ', $select_list) . $new_line;
         }
 
-        $sql .= ' FROM ';
+        $sql .= 'FROM ';
 
         // Add any explicit JOIN statements before the non-joined tables.
         if ( $this->joins && count($this->joins) ) {
@@ -195,6 +207,7 @@ class SQL_Maker_Select {
         if ($this->where)    { $sql .= $this->asSqlWhere();   }
         if ($this->group_by) { $sql .= $this->asSqlGroupBy(); }
         if ($this->having)   { $sql .= $this->asSqlHaving();  }
+        if ($this->order_by) { $sql .= $this->asSqlOrderBy(); }
         if ($this->limit)    { $sql .= $this->asSqlLimit();   }
 
         $sql .= $this->asSqlForUpdate();
@@ -213,7 +226,7 @@ class SQL_Maker_Select {
         return sprintf("LIMIT %d%s" . $this->new_line, $n, $offset);
     }
 
-    public function addOrderBy($col, $type) {
+    public function addOrderBy($col, $type = '') {
         $this->order_by[] = array($col, $type);
         return $this;
     }
@@ -294,7 +307,10 @@ class SQL_Maker_Select {
 
     public function _addIndexHint($tbl_name, $alias) {
         $quoted = $alias ? $this->quote($tbl_name) . ' ' . $this->quote($alias) : $this->quote($tbl_name);
-        $hint = $this->index_hint[$tbl_name];
+        $hint =
+            array_key_exists($tbl_name, $this->index_hint)
+            ? $this->index_hint[$tbl_name]
+            : '';
 
         if ( ! $hint || ! is_array( $hint ) ) {
             return $quoted;
