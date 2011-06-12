@@ -17,4 +17,27 @@ class SQL_Maker_Util {
         }
         return implode($name_sep, $new_list);
     }
+
+    static public function is_hash($array) {
+
+        $i = 0;
+        foreach ($array as $k => $dummy) {
+            if ( $k !== $i++ ) return true;
+        }
+        return false;
+
+    }
+
+    static public function to_array($hash) {
+
+        if ( ! self::is_hash( $hash ) ) { return $hash; }
+
+        $array = array();
+        foreach ($hash as $k => $v) {
+            $array[] = array($k, $v);
+        }
+
+        return $array;
+
+    }
 }

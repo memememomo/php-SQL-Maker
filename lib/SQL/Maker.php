@@ -64,11 +64,13 @@ class SQL_Maker {
     }
 
 
-    public function insert($table, $values, $opt) {
+    public function insert($table, $values, $opt = array()) {
         $prefix =
             array_key_exists('prefix', $opt)
             ? $opt['prefix']
             : 'INSERT INTO';
+
+        $values = SQL_Maker_Util::to_array($values);
 
         $quoted_table = $this->quote($table);
 
