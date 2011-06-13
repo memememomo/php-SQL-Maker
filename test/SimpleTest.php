@@ -23,7 +23,7 @@ class SimpleTest extends PHPUnit_Framework_TestCase {
         $opt['order_by'] = 'yo';
 
         $stmt = $builder->selectQuery($table, $fields, $where, $opt);
-        $this->assertEquals("SELECT \"foo\", \"bar\"\nFROM \"foo\"\nWHERE (\"bar\" = ?) AND (\"john\" = ?)\nORDER BY \"yo\"\n", $stmt->asSql());
+        $this->assertEquals("SELECT \"foo\", \"bar\"\nFROM \"foo\"\nWHERE (\"bar\" = ?) AND (\"john\" = ?)\nORDER BY yo", $stmt->asSql());
         $this->assertEquals('baz,man', implode(',', $stmt->bind()));
     }
 
@@ -43,7 +43,7 @@ class SimpleTest extends PHPUnit_Framework_TestCase {
 
         $stmt = $builder->selectQuery($table, $fields, $where, $opt);
 
-        $this->assertEquals('SELECT foo, bar FROM foo WHERE (bar = ?) AND (john = ?) ORDER BY yo ', $stmt->asSql());
+        $this->assertEquals('SELECT foo, bar FROM foo WHERE (bar = ?) AND (john = ?) ORDER BY yo', $stmt->asSql());
         $this->assertEquals("baz,man", implode(',', $stmt->bind()));
     }
 

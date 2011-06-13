@@ -187,7 +187,7 @@ class SQL_Maker {
     // list($stmt, $bind) = $sql->select($table, $fields, $where, $opt)
     public function select($table, $fields, $where = array(), $opt = array())  {
         $stmt = $this->selectQuery($table, $fields, $where, $opt);
-        return array($stmt->as_sql(), $stmt->bind());
+        return array($stmt->asSql(), $stmt->bind());
     }
 
     public function selectQuery($table, $fields, $where = array(), $opt = array()) {
@@ -206,19 +206,22 @@ class SQL_Maker {
         else {
             // $table = [ 'foo', [ bar => 'b' ] ]
             for ($i = 0; $i < count($table); $i++) {
-                if (is_array($table[$i])) {
-                    $stmt->addFrom($table[$i]);
+                if ( is_array($table[$i]) ) {
+                    foreach ($table[$i] as $tbl => $alias) {
+                        $stmt->addFrom($tbl, $alias);
+                    }
                 } else {
-                    $stmt->addFrom(array($table[$i]));
+                    $stmt->addFrom($table[$i]);
                 }
             }
         }
 
         if ( array_key_exists('prefix', $opt) ) {
-            $stmt->prefix($opt['prefix']);
+            $stmt->prefix = $opt['prefix'];
         }
 
         if ( $where ) {
+            $where = SQL_Maker_Util::to_array( $where );
             for ($i = 0; $i < count($where); $i++) {
                 $col = $where[$i][0];
                 $val = $where[$i][1];
@@ -228,19 +231,23 @@ class SQL_Maker {
 
         if ( array_key_exists('order_by', $opt) ) {
             $o = $opt['order_by'];
+
             if ( is_array( $o ) ) {
+                $o = SQL_Maker_Util::to_array( $o );
                 for ($i = 0; $i < count($o); $i++) {
                     if ( is_array($o[$i]) ) {
                         // Skinny-ish array(array(foo => 'DESC'), array(bar => 'ASC'))
-                        $stmt->addOrderBy($o[$i][0], $o[$i][1]);
+                        foreach ($o[$i] as $col => $type) {
+                            $stmt->addOrderBy($col, $type);
+                        }
                     } else {
                         // just array('foo DESC', 'bar ASC')
-                        $stmt->addOrderBy($o[$i]);
+                        $stmt->addOrderBy(array($o[$i]));
                     }
                 }
             } else {
                 // just 'foo DESC, bar ASC'
-                $stmt->addOrderBy($o);
+                $stmt->addOrderBy(array($o));
             }
         }
 

@@ -211,7 +211,7 @@ class SQL_Maker_Select {
         if ($this->limit)    { $sql .= $this->asSqlLimit();   }
 
         $sql .= $this->asSqlForUpdate();
-        preg_replace("/{$new_line}+$/", "", $sql);
+        $sql = preg_replace("/{$new_line}+$/", "", $sql);
 
         return $sql;
     }
@@ -219,9 +219,9 @@ class SQL_Maker_Select {
     public function asSqlLimit() {
         $n = $this->limit;
         if ( ! $n ) { return ''; }
-        if ( pref_match("/\D/", $n) ) { throw new Exception("Non-numerics in limit clause ($n)"); }
+        if ( preg_match("/\D/", $n) ) { throw new Exception("Non-numerics in limit clause ($n)"); }
 
-        $offset = $this->offset ? " OFFSET " . int($this->offset) : "";
+        $offset = $this->offset ? " OFFSET " . (int)$this->offset : "";
 
         return sprintf("LIMIT %d%s" . $this->new_line, $n, $offset);
     }
@@ -241,9 +241,9 @@ class SQL_Maker_Select {
             $type = $attr[1];
 
             if ( is_array( $col ) ) {
-                $attr_list[] = $col;
+                $attr_list[] = $col[0];
             } else {
-                $attr_list[] = $type ? $this->quote($col) . " $type " : $this->quote($col);
+                $attr_list[] = $type ? $this->quote($col) . " $type" : $this->quote($col);
             }
         }
 
@@ -307,6 +307,7 @@ class SQL_Maker_Select {
 
     public function _addIndexHint($tbl_name, $alias) {
         $quoted = $alias ? $this->quote($tbl_name) . ' ' . $this->quote($alias) : $this->quote($tbl_name);
+
         $hint =
             array_key_exists($tbl_name, $this->index_hint)
             ? $this->index_hint[$tbl_name]
