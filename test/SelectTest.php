@@ -174,4 +174,116 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('', implode(',', $binds));
     }
 
+
+
+    public function testDriverMysqlColumnsAndTables() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+        list($sql, $binds) = $builder->select( 'foo', array( '*' ) );
+        $this->assertEquals("SELECT *\nFROM `foo`", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlColumnsAndTablesWhereCauseHash() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('foo', 'bar');
+
+        $where = array();
+        $where['bar'] = 'baz';
+        $where['john'] = 'man';
+
+        list($sql, $binds) = $builder->select( $table, $columns, $where );
+        $this->assertEquals("SELECT `foo`, `bar`\nFROM `foo`\nWHERE (`bar` = ?) AND (`john` = ?)", $sql);
+        $this->assertEquals("baz,man", implode(',', $binds));
+    }
+
+
+    public function testDriverMysqlColumnsAndTablesWhereCauseArray() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('foo', 'bar');
+
+        $where = array();
+        $where[] = array('bar', 'baz');
+        $where[] = array('john', 'man');
+
+        list($sql, $binds) = $builder->select( $table, $columns, $where );
+        $this->assertEquals("SELECT `foo`, `bar`\nFROM `foo`\nWHERE (`bar` = ?) AND (`john` = ?)", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+
+    public function testDriverMysqlColumnsAndTablesWhereCauseHashOrderBy() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('foo', 'bar');
+
+        $where = array();
+        $where['bar'] = 'baz';
+        $where['john'] = 'man';
+
+        $opt = array();
+        $opt['order_by'] = 'yo';
+
+        list($sql, $binds) = $builder->select( $table, $columns, $where, $opt );
+        $this->assertEquals("SELECT `foo`, `bar`\nFROM `foo`\nWHERE (`bar` = ?) AND (`john` = ?)\nORDER BY yo", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+
+    public function testDriverMysqlColumnsAndTablesWhereCauseArrayOrderBy() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('foo', 'bar');
+
+        $where = array();
+        $where[] = array('bar', 'baz');
+        $where[] = array('john', 'man');
+
+        $opt = array();
+        $opt['order_by'] = 'yo';
+
+        list($sql, $binds) = $builder->select( $table, $columns, $where, $opt );
+        $this->assertEquals("SELECT `foo`, `bar`\nFROM `foo`\nWHERE (`bar` = ?) AND (`john` = ?)\nORDER BY yo", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+
+    public function testDriverMysqlColumnsAndTablesWhereCauseArrayOrderByLimitOffset() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('foo', 'bar');
+
+        $where = array();
+        $where[] = array('bar', 'baz');
+        $where[] = array('john', 'man');
+
+        $opt = array();
+        $opt['order_by'] = 'yo';
+        $opt['limit'] = 1;
+        $opt['offset'] = 3;
+
+        list($sql, $binds) = $builder->select( $table, $columns, $where, $opt );
+        $this->assertEquals("SELECT `foo`, `bar`\nFROM `foo`\nWHERE (`bar` = ?) AND (`john` = ?)\nORDER BY yo\nLIMIT 1 OFFSET 3", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+    public function testDriverMysqlModifyPrefix() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('foo', 'bar');
+
+        $opt['prefix'] = 'SELECT SQL_CALC_FOUND_ROWS ';
+
+        list($sql, $binds) = $builder->select( $table, $columns, array(), $opt );
+        $this->assertEquals("SELECT SQL_CALC_FOUND_ROWS `foo`, `bar`\nFROM `foo`", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
 }
