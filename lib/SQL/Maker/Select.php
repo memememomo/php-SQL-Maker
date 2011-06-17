@@ -37,6 +37,7 @@ class SQL_Maker_Select {
         $this->initArg('index_hint', $args, array());
         $this->initArg('group_by', $args, array());
         $this->initArg('order_by', $args, array());
+        $this->initArg('subqueries', $args, array());
         $this->initArg('prefix', $args, 'SELECT ');
         $this->initArg('distinct', $args, 0);
         $this->initArg('quote_char', $args, '`');
@@ -70,7 +71,7 @@ class SQL_Maker_Select {
         return $bind;
     }
 
-    public function addSelect($term, $col) {
+    public function addSelect($term, $col = null) {
         if ( is_null($col) ) {
             $col = $term;
         }
@@ -83,9 +84,9 @@ class SQL_Maker_Select {
     }
 
     public function addFrom($table, $alias = '') {
-        if ( is_object( $table ) && method_exists( $table, 'as_sql' ) ) {
-            $this->subqueries[] = $table->bind;
-            $this->from[] = array('('.$table->as_sql().')', $alias);
+        if ( is_object( $table ) && method_exists( $table, 'asSql' ) ) {
+            $this->subqueries = array_merge($this->subqueries, $table->bind());
+            $this->from[] = array(array('('.$table->asSql().')'), $alias);
         }
         else {
             $this->from[] = array($table, $alias);
@@ -99,7 +100,9 @@ class SQL_Maker_Select {
         $alias = $table_ref[1];
 
         if ( is_object( $table ) && method_exists( $table, 'as_sql' ) ) {
-            $self->subqueries[] = $table->bind;
+            foreach ($table->bind as $b) {
+                $self->subqueries[] = $b;
+            }
             $table = array( '(' . $table->as_sql() . ')' );
         }
 
@@ -129,7 +132,7 @@ class SQL_Maker_Select {
 
     private function quote($label) {
         if ( is_array($label) ) {
-            return $label;
+            return $label[0];
         }
 
         return SQL_Maker_Util::quoteIdentifier($label, $this->quote_char, $this->name_sep);
@@ -152,7 +155,7 @@ class SQL_Maker_Select {
 
                 if ( ! $alias ) {
                     $select_list[] = $this->quote($s);
-                } else if ( $alias && pref_match("/(^|\.)$alias/", $s)  ) {
+                } else if ( $alias && preg_match("/(^|\.)$alias/", $s)  ) {
                     $select_list[] = $this->quote($s);
                 } else {
                     $select_list[] = $this->quote($s) . ' AS ' . $this->quote($alias);
@@ -309,7 +312,7 @@ class SQL_Maker_Select {
         $quoted = $alias ? $this->quote($tbl_name) . ' ' . $this->quote($alias) : $this->quote($tbl_name);
 
         $hint =
-            array_key_exists($tbl_name, $this->index_hint)
+            ( ! is_array( $tbl_name) && array_key_exists($tbl_name, $this->index_hint))
             ? $this->index_hint[$tbl_name]
             : '';
 

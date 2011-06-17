@@ -220,10 +220,16 @@ class SQL_Maker {
             // $table = [ 'foo', [ bar => 'b' ] ]
             for ($i = 0; $i < count($table); $i++) {
                 if ( is_array($table[$i]) ) {
-                    foreach ($table[$i] as $tbl => $alias) {
-                        $stmt->addFrom($tbl, $alias);
+                    if ( SQL_Maker_Util::is_hash( $table[$i] ) ) {
+                        foreach ($table[$i] as $tbl => $alias) {
+                            $stmt->addFrom($tbl, $alias);
+                        }
                     }
-                } else {
+                    else {
+                        $stmt->addFrom($table[$i][0], $table[$i][1]);
+                    }
+                }
+                else {
                     $stmt->addFrom($table[$i]);
                 }
             }
