@@ -350,4 +350,20 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('', implode(',', $binds));
     }
 
+    public function testDriverMysqlFromMultiFrom() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        list($sql, $binds) = $builder->select(array('foo', 'bar'), array('*'));
+        $this->assertEquals("SELECT *\nFROM `foo`, `bar`", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlFromMultiFromWithAlias() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        list($sql, $binds) = $builder->select(array(array( 'foo' => 'f' ), array( 'bar' => 'b' )), array('*'));
+        $this->assertEquals("SELECT *\nFROM `foo` `f`, `bar` `b`", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
 }
