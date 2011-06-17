@@ -45,7 +45,7 @@ class SQL_Maker_Select {
         $this->initArg('new_line', $args, "\n");
     }
 
-    public function new_condition() {
+    public function newCondition() {
         return new SQL_Maker_Condition(array(
                                              'quote_char' => $this->quote_char,
                                              'name_sep'   => $this->name_sep,
@@ -99,16 +99,17 @@ class SQL_Maker_Select {
         $table = $table_ref[0];
         $alias = $table_ref[1];
 
-        if ( is_object( $table ) && method_exists( $table, 'as_sql' ) ) {
-            foreach ($table->bind as $b) {
-                $self->subqueries[] = $b;
+        if ( is_object( $table ) && method_exists( $table, 'asSql' ) ) {
+            foreach ($table->bind() as $b) {
+                $this->subqueries[] = $b;
             }
-            $table = array( '(' . $table->as_sql() . ')' );
+
+            $table = array( '(' . $table->asSql() . ')' );
         }
 
-        $self->joins[] = array(
-                               table => array( $table, $alias ),
-                               joins => $joins,
+        $this->joins[] = array(
+                               'table' => array( $table, $alias ),
+                               'joins' => $joins,
                                );
 
         return $this;
@@ -173,10 +174,10 @@ class SQL_Maker_Select {
             foreach ($this->joins as $j) {
                 $table = $j['table'];
                 $join  = $j['joins'];
-                $table = $this->_addIndexHint( $table ); // index hint handling
 
+                $table = $this->_addIndexHint( $table[0], $table[1] ); // index hint handling
                 if ( ! $initial_table_written++ ) { $sql .= $table; }
-                $sql .= ' ' . uc($join['type']) . ' JOIN ' . $this->quote($this->table);
+                $sql .= ' ' . strtoupper($join['type']) . ' JOIN ' . $this->quote($join['table']);
                 if ( $join['alias'] ) { $sql .= ' ' . $this->quote($join['alias']); }
 
 
@@ -214,7 +215,7 @@ class SQL_Maker_Select {
         if ($this->limit)    { $sql .= $this->asSqlLimit();   }
 
         $sql .= $this->asSqlForUpdate();
-        $sql = preg_replace("/{$new_line}+$/", "", $sql);
+        $sql = preg_replace("/".$new_line.'+$/', "", $sql);
 
         return $sql;
     }
@@ -273,7 +274,7 @@ class SQL_Maker_Select {
 
     public function addWhere($col, $val) {
         if ( ! $this->where ) {
-            $this->where = $this->new_condition();
+            $this->where = $this->newCondition();
         }
         $this->where->add($col, $val);
         return $this;
@@ -308,7 +309,7 @@ class SQL_Maker_Select {
         return $this->for_update ? ' FOR UPDATE' : '';
     }
 
-    public function _addIndexHint($tbl_name, $alias) {
+    public function _addIndexHint($tbl_name, $alias = '') {
         $quoted = $alias ? $this->quote($tbl_name) . ' ' . $this->quote($alias) : $this->quote($tbl_name);
 
         $hint =

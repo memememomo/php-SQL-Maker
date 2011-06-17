@@ -39,4 +39,49 @@ class SubqueryTest extends PHPUnit_Framework_TestCase {
 
     }
 
+
+    public function testSubqueryAndJoin() {
+        $subquery = new SQL_Maker_Select(array( 'quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $subquery->addSelect('*');
+        $subquery->addFrom( 'foo' );
+        $subquery->addWhere('hoge', 'fuga');
+
+        $stmt = new SQL_Maker_Select(array( 'quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+
+        $stmt->addJoin(
+                       array( $subquery, 'bar' ),
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'alias'     => 'b1',
+                             'condition' => 'bar.baz_id = b1.baz_id'
+                             )
+                       );
+        $this->assertEquals("FROM (SELECT * FROM foo WHERE (hoge = ?)) bar INNER JOIN baz b1 ON bar.baz_id = b1.baz_id", $stmt->asSql());
+        $this->assertEquals("fuga", implode(',', $stmt->bind()));
+    }
+
+    public function testComplex() {
+        $s1 = new SQL_Maker_Select(array( 'quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $s1->addSelect('*');
+        $s1->addFrom( 'foo' );
+        $s1->addWhere('hoge', 'fuga');
+
+        $s2 = new SQL_Maker_Select(array( 'quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $s2->addSelect('*');
+        $s2->addFrom( $s1, 'f' );
+        $s2->addWhere('piyo', 'puyo');
+        $stmt = new SQL_Maker_Select(array( 'quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addJoin(
+                       array( $s2, 'bar' ),
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'alias'     => 'b1',
+                             'condition' => 'bar.baz_id = b1.baz_id'
+                             )
+                       );
+        $this->assertEquals("FROM (SELECT * FROM (SELECT * FROM foo WHERE (hoge = ?)) f WHERE (piyo = ?)) bar INNER JOIN baz b1 ON bar.baz_id = b1.baz_id", $stmt->asSql());
+        $this->assertEquals("fuga,puyo", implode(',', $stmt->bind()));
+    }
 }
