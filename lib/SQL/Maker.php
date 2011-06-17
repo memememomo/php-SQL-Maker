@@ -285,5 +285,14 @@ class SQL_Maker {
 
         return $stmt;
     }
+
+
+    public function testDriverMysqlQuoteCharNewLineColumnsAndTables() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        list($sql, $binds) = $builder->select('foo', array('*'));
+        $this->assertEquals("SELECT * FROM foo", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
 }
 
