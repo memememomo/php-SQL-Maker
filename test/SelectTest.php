@@ -286,4 +286,68 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('', implode(',', $binds));
     }
 
+    public function testDriverMysqlOrderbyScalar() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = 'yo';
+
+        list($sql, $binds) = $builder->select($table, $columns, $where, $opt);
+        $this->assertEquals("SELECT *\nFROM `foo`\nORDER BY yo", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlOrderbyHash() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = array('yo' => 'DESC');
+
+        list($sql, $binds) = $builder->select($table, $columns, $where, $opt);
+        $this->assertEquals("SELECT *\nFROM `foo`\nORDER BY `yo` DESC", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlOrderbyArray() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = array('yo', 'ya');
+
+        list($sql, $binds) = $builder->select($table, $columns, $where, $opt);
+        $this->assertEquals("SELECT *\nFROM `foo`\nORDER BY yo, ya", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlOrderbyMixed() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+
+        $table = 'foo';
+        $columns = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = array(array('yo' => 'DESC'), 'ya');
+
+        list($sql, $binds) = $builder->select($table, $columns, $where, $opt);
+        $this->assertEquals("SELECT *\nFROM `foo`\nORDER BY `yo` DESC, ya", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
 }

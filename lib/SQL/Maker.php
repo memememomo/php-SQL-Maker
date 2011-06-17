@@ -233,7 +233,16 @@ class SQL_Maker {
             $o = $opt['order_by'];
 
             if ( is_array( $o ) ) {
-                $o = SQL_Maker_Util::to_array( $o );
+
+                // array(foo => 'DESC') -> array(array(foo => 'DESC'))
+                if ( SQL_Maker_Util::is_hash( $o ) ) {
+                    $new_o = array();
+                    foreach ($o as $col => $type) {
+                        $new_o[] = array($col => $type);
+                    }
+                    $o = $new_o;
+                }
+
                 for ($i = 0; $i < count($o); $i++) {
                     if ( is_array($o[$i]) ) {
                         // Skinny-ish array(array(foo => 'DESC'), array(bar => 'ASC'))
@@ -245,6 +254,7 @@ class SQL_Maker {
                         $stmt->addOrderBy(array($o[$i]));
                     }
                 }
+
             } else {
                 // just 'foo DESC, bar ASC'
                 $stmt->addOrderBy(array($o));
