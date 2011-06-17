@@ -366,4 +366,178 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('', implode(',', $binds));
     }
 
+
+
+    public function testDriverMysqlQuoteCharNewLineColumnsAndTables() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        list($sql, $binds) = $builder->select('foo', array('*'));
+        $this->assertEquals("SELECT * FROM foo", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineColumnsAndTablesWhereCauseHash() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('foo', 'bar');
+
+        $where = array();
+        $where['bar']  = 'baz';
+        $where['john'] = 'man';
+
+        list($sql, $binds) = $builder->select($table, $fields, $where);
+        $this->assertEquals("SELECT foo, bar FROM foo WHERE (bar = ?) AND (john = ?)", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+
+    public function testDriverMysqlQuoteCharNewLineColumnsAndTablesWhereCauseArray() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('foo', 'bar');
+
+        $where = array();
+        $where[] = array('bar', 'baz');
+        $where[] = array('john', 'man');
+
+        list($sql, $binds) = $builder->select($table, $fields, $where);
+        $this->assertEquals("SELECT foo, bar FROM foo WHERE (bar = ?) AND (john = ?)", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineColumnsAndTablesWhereCauseHashOrderBy() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('foo', 'bar');
+
+        $where = array();
+        $where['bar']  = 'baz';
+        $where['john'] = 'man';
+
+        $opt = array();
+        $opt['order_by'] = 'yo';
+
+        list($sql, $binds) = $builder->select($table, $fields, $where, $opt);
+        $this->assertEquals("SELECT foo, bar FROM foo WHERE (bar = ?) AND (john = ?) ORDER BY yo", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+
+    public function testDriverMysqlQuoteCharNewLineColumnsAndTablesWhereCauseArrayOrderBy() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('foo', 'bar');
+
+        $where = array();
+        $where[] = array('bar', 'baz');
+        $where[] = array('john', 'man');
+
+        $opt = array();
+        $opt['order_by'] = 'yo';
+
+        list($sql, $binds) = $builder->select($table, $fields, $where, $opt);
+        $this->assertEquals("SELECT foo, bar FROM foo WHERE (bar = ?) AND (john = ?) ORDER BY yo", $sql);
+        $this->assertEquals('baz,man', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineModifyPrefix() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('foo', 'bar');
+
+        $where = array();
+
+        $opt = array();
+        $opt['prefix'] = 'SELECT SQL_CALC_FOUND_ROWS ';
+
+        list($sql, $binds) = $builder->select($table, $fields, $where, $opt);
+        $this->assertEquals("SELECT SQL_CALC_FOUND_ROWS foo, bar FROM foo", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineOrderByScalar() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = 'yo';
+
+        list($sql, $binds) = $builder->select($table, $fields, $where, $opt);
+        $this->assertEquals("SELECT * FROM foo ORDER BY yo", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineOrderByHash() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = array('yo' => 'DESC');
+
+        list($sql, $binds) = $builder->select($table, $fields, $where, $opt);
+        $this->assertEquals("SELECT * FROM foo ORDER BY yo DESC", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineOrderByArray() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = array('yo', 'ya');
+
+        list($sql, $binds) = $builder->select($table, $fields, $where, $opt);
+        $this->assertEquals("SELECT * FROM foo ORDER BY yo, ya", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineOrderByMixed() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        $table = 'foo';
+        $fields = array('*');
+
+        $where = array();
+
+        $opt = array();
+        $opt['order_by'] = array(array('yo' => 'DESC'), 'ya');
+
+        list($sql, $binds) = $builder->select($table, $fields, $where, $opt);
+        $this->assertEquals("SELECT * FROM foo ORDER BY yo DESC, ya", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineFromMultiFrom() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        list($sql, $binds) = $builder->select(array('foo', 'bar'), array('*'));
+        $this->assertEquals("SELECT * FROM foo, bar", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
+    public function testDriverMysqlQuoteCharNewLineFromMultiFromWithAlias() {
+        $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
+
+        list($sql, $binds) = $builder->select(array(array('foo' => 'f'), array('bar' => 'b')), array('*'));
+        $this->assertEquals("SELECT * FROM foo f, bar b", $sql);
+        $this->assertEquals('', implode(',', $binds));
+    }
+
 }
