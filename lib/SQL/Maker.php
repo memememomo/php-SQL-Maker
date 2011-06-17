@@ -124,15 +124,27 @@ class SQL_Maker {
         return array($sql, $w[1]);
     }
 
-    public function update($table, $args, $where) {
+    public function update($table, $args, $where = array()) {
 
+        $args = SQL_Maker_Util::to_array( $args );
         $columns = array();
         $bind_columns = array();
         // make "SET" clause
         for ($i = 0; $i < count($args); $i++) {
             $pair = $args[ $i ];
-            $col = $pair[0];
-            $val = $pair[1];
+
+            $col = null;
+            $val = null;
+            if ( SQL_Maker_Util::is_hash( $pair ) ) {
+                foreach ($pair as $c => $v) {
+                    $col = $c;
+                    $val = $v;
+                }
+            }
+            else {
+                $col = $pair[0];
+                $val = $pair[1];
+            }
 
             $quoted_col = $this->quote($col);
             if (is_array($val)) {
@@ -158,6 +170,7 @@ class SQL_Maker {
             }
         }
 
+        $where = SQL_Maker_Util::to_array( $where );
         $w = $this->makeWhereClause($where);
         $bind_columns = array_merge($bind_columns, $w[1]);
 
