@@ -98,8 +98,12 @@ class SQL_Maker_Select {
 
     public function addJoin($table_ref, $joins) {
 
-        $table = $table_ref[0];
-        $alias = $table_ref[1];
+        if ( is_array( $table_ref ) ) {
+            $table = $table_ref[0];
+            $alias = $table_ref[1];
+        } else {
+            $table = $table_ref;
+        }
 
         if ( is_object( $table ) && method_exists( $table, 'asSql' ) ) {
             foreach ($table->bind() as $b) {
