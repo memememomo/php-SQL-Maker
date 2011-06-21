@@ -8,6 +8,7 @@ class SQL_Maker_Select {
     public function offset($offset) {
         if ($offset) {
             $this->offset = $offset;
+            return $this;
         } else {
             return $this->offset;
         }
@@ -16,6 +17,7 @@ class SQL_Maker_Select {
     public function limit($limit) {
         if ($limit) {
             $this->limit = $limit;
+            return $this;
         } else {
             return $this->limit;
         }
@@ -77,8 +79,8 @@ class SQL_Maker_Select {
         }
 
         $this->select[] = $term;
-        $this->select_map[$term] = $col;
-        $this->select_map_reverse[$col] = $term;
+        $this->select_map[] = array($term, $col);
+        $this->select_map_reverse[] = array($col, $term);
 
         return $this;
     }
@@ -149,10 +151,12 @@ class SQL_Maker_Select {
 
             $select_list = array();
             foreach ($this->select as $s) {
+                /*
                 $alias =
                     array_key_exists($s, $this->select_map)
                     ? $this->select_map[ $s ]
                     : '';
+                */
 
                 if ( ! $alias ) {
                     $select_list[] = $this->quote($s);

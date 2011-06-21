@@ -1,6 +1,6 @@
 <?php
 
-require_once('SQL/Maker/Select.php');
+require_once('SQL/Maker.php');
 
 class SQL_Maker_Select_Oracle extends SQL_Maker_Select {
 
@@ -8,20 +8,20 @@ class SQL_Maker_Select_Oracle extends SQL_Maker_Select {
         return '';
     }
 
-    public function asSql($stmt) {
-        $limit = $stmt->limit;
-        $offset = $stmt->offset;
+    public function asSql() {
+        $limit = $this->limit;
+        $offset = $this->offset;
 
         if ( ! is_null($limit) && ! is_null($offset) ) {
-            $stmt->addSelect( "ROW_NUMBER() OVER (ORDER BY 1) R" );
+            $this->addSelect( SQL_Maker::raw("ROW_NUMBER() OVER (ORDER BY 1) R") );
         }
 
-        $sql = $stmt->asSql($args);
+        $sql = parent::asSql($args);
 
         if ( ! is_null($limit) ) {
             $sql = "SELECT * FROM ( $sql ) WHERE ";
             if ( ! is_null($offset) ) {
-                $sql = $sql . " $ BETWEEN $offset + 1 AND $limit + $offset";
+                $sql = $sql . " R BETWEEN $offset + 1 AND $limit + $offset";
             } else {
                 $sql = $sql . " rownum <= $limit";
             }

@@ -40,4 +40,6 @@ class SQL_Maker_Util {
         return $array;
 
     }
+
 }
+

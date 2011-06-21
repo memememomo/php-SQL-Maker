@@ -1,0 +1,27 @@
+<?php
+ini_set('include_path',
+        ini_get('include_path')
+        .PATH_SEPARATOR
+        .dirname(__FILE__).'/../../../lib');
+
+require_once('SQL/Maker/Select/Oracle.php');
+
+class OracleTest extends PHPUnit_Framework_TestCase {
+
+    public function todoOracle() {
+        $sel = new SQL_Maker_Select_Oracle(
+                                           array(
+                                                 'new_line' => ' '
+                                                 )
+                                           );
+        $sel =
+            $sel->addSelect('foo')
+            ->addFrom('user')
+            ->limit(10)
+            ->offset(20);
+
+        $this->assertEquals("SELECT * FROM ( SELECT foo, ROW_NUMBER() OVER (ORDER BY 1) R FROM user LIMIT 10 OFFSET 20 ) WHERE  R BETWEEN 20 + 1 AND 10 + 20", $sel->asSql());
+
+    }
+
+}

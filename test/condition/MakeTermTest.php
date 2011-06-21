@@ -43,7 +43,6 @@ class MakeTermTest extends PHPUnit_Framework_TestCase {
 
 
     public function check($source, $expected_term, $expected_bind) {
-        echo $expected_term . "\n";
 
         $cond = new SQL_Maker_Condition(
                                         array(

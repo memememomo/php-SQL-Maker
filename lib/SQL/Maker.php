@@ -305,5 +305,35 @@ class SQL_Maker {
         return $stmt;
     }
 
+
+    public function raw($str) {
+        return new SQL_Maker_Raw_String($str);
+    }
+
+
+    public function is_raw($string) {
+        if ( is_object( $string ) ) {
+            $class_name = get_class( $string );
+            if ( strcmp($class_name, 'SQL_Maker_Raw_String') === 0 ) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
 }
 
+
+class SQL_Maker_Raw_String {
+    public $string;
+
+    public function __construct($str) {
+        $this->string = $str;
+    }
+
+}

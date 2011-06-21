@@ -118,6 +118,10 @@ class SQL_Maker_Condition {
                 }
             }
         }
+        elseif ( SQL_Maker::is_raw( $val ) ) {
+            $v = $val->string;
+            return array($this->quote($col) . " $v", array());
+        }
         else {
             if ( is_null($val) ) {
                 // makeTerm(foo, null) => foo IS NULL
