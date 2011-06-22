@@ -78,8 +78,8 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $stmt->addJoin(
                        'foo',
                        array(
-                             'type' => 'inner',
-                             'table' => 'baz',
+                             'type'      => 'inner',
+                             'table'     => 'baz',
                              'condition' => 'foo.baz_id = baz.baz_id',
                              )
                        );
@@ -92,12 +92,68 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $stmt->addJoin(
                        'foo',
                        array(
-                             'type' => 'inner',
-                             'table' => 'baz',
+                             'type'      => 'inner',
+                             'table'     => 'baz',
                              'condition' => 'foo.baz_id = baz.baz_id'
                              )
                        );
         $this->assertEquals("FROM `foo` INNER JOIN `baz` ON foo.baz_id = baz.baz_id, `bar`", $stmt->asSql());
+    }
+
+    public function testJoinQuoteCharNameSepTestCaseForBugFoundWhereAddJoinIsCalledTwice() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addJoin(
+                       'foo',
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'alias'     => 'b1',
+                             'condition' => 'foo.baz_id = b1.baz_id AND b1.quux_id = 1'
+                             )
+                       );
+        $stmt->addJoin(
+                       'foo',
+                       array(
+                             'type'      => 'left',
+                             'table'     => 'baz',
+                             'alias'     => 'b2',
+                             'condition' => 'foo.baz_id = b2.baz_id AND b2.quux_id = 2'
+                             )
+                       );
+
+        $this->assertEquals("FROM `foo` INNER JOIN `baz` `b1` ON foo.baz_id = b1.baz_id AND b1.quux_id = 1 LEFT JOIN `baz` `b2` ON foo.baz_id = b2.baz_id AND b2.quux_id = 2", $stmt->asSql());
+    }
+
+    public function testJoinQuoteCharNameSepTestCaseAddingAnotherTableOntoTheWholeMess() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addJoin(
+                       'foo',
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'alias'     => 'b1',
+                             'condition' => 'foo.baz_id = b1.baz_id AND b1.quux_id = 1'
+                             )
+                       );
+        $stmt->addJoin(
+                       'foo',
+                       array(
+                             'type'      => 'left',
+                             'table'     => 'baz',
+                             'alias'     => 'b2',
+                             'condition' => 'foo.baz_id = b2.baz_id AND b2.quux_id = 2'
+                             )
+                       );
+        $stmt->addJoin(
+                       'quux',
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'foo',
+                             'alias'     => 'f1',
+                             'condition'  => 'f1.quux_id = quux.q_id'
+                             )
+                       );
+        $this->assertEquals("FROM `foo` INNER JOIN `baz` `b1` ON foo.baz_id = b1.baz_id AND b1.quux_id = 1 LEFT JOIN `baz` `b2` ON foo.baz_id = b2.baz_id AND b2.quux_id = 2 INNER JOIN `foo` `f1` ON f1.quux_id = quux.q_id", $stmt->asSql());
     }
 
     public function ns($args) {
