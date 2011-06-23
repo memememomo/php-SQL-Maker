@@ -320,6 +320,76 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         }
     }
 
+
+    // WHERE
+    public function testWhereQuoteCharNameSepSingleEquals() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addWhere('foo', 'bar');
+        $this->assertEquals("WHERE (`foo` = ?)\n", $stmt->asSqlWhere());
+        $this->assertEquals(1, count($stmt->bind()));
+        $b = $stmt->bind();
+        $this->assertEquals('bar', $b[0]);
+    }
+
+    public function testWhereQuoteCharNameSepSingleEqualsMultiValuesIsINStatement() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addWhere('foo', array('bar', 'baz'));
+        $this->assertEquals("WHERE (`foo` IN (?, ?))\n", $stmt->asSqlWhere());
+
+        $b = $stmt->bind();
+        $this->assertEquals(2, count($b));
+        $this->assertEquals('bar', $b[0]);
+        $this->assertEquals('baz', $b[1]);
+    }
+
+    public function testWhereQuoteCharNameSepNewConditionSingleEqualsMultiValuesIsINStatement() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $cond = $stmt->newCondition();
+        $cond->add('foo', array('bar', 'baz'));
+        $stmt->setWhere($cond);
+        $this->assertEquals("WHERE (`foo` IN (?, ?))\n", $stmt->asSqlWhere());
+
+        $b = $stmt->bind();
+        $this->assertEquals(2, count($b));
+        $this->assertEquals('bar', $b[0]);
+        $this->assertEquals('baz', $b[1]);
+    }
+
+
+    public function testWhereQuoteCharNameSepNewLineSingleEquals() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addWhere('foo', 'bar');
+        $this->assertEquals("WHERE (foo = ?) ", $stmt->asSqlWhere());
+        $this->assertEquals(1, count($stmt->bind()));
+        $b = $stmt->bind();
+        $this->assertEquals('bar', $b[0]);
+    }
+
+    public function testWhereQuoteCharNameSepNewLineSingleEqualsMultiValuesIsINStatement() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addWhere('foo', array('bar', 'baz'));
+        $this->assertEquals("WHERE (foo IN (?, ?)) ", $stmt->asSqlWhere());
+
+        $b = $stmt->bind();
+        $this->assertEquals(2, count($b));
+        $this->assertEquals('bar', $b[0]);
+        $this->assertEquals('baz', $b[1]);
+    }
+
+    public function testWhereQuoteCharNameSepNewLineNewConditionSingleEqualsMultiValuesIsINStatement() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $cond = $stmt->newCondition();
+        $cond->add('foo', array('bar', 'baz'));
+        $stmt->setWhere($cond);
+        $this->assertEquals("WHERE (foo IN (?, ?)) ", $stmt->asSqlWhere());
+
+        $b = $stmt->bind();
+        $this->assertEquals(2, count($b));
+        $this->assertEquals('bar', $b[0]);
+        $this->assertEquals('baz', $b[1]);
+    }
+
+
     public function ns($args) {
         return new SQL_Maker_Select($args);
     }
