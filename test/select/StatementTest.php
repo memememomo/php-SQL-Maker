@@ -156,6 +156,36 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("FROM `foo` INNER JOIN `baz` `b1` ON foo.baz_id = b1.baz_id AND b1.quux_id = 1 LEFT JOIN `baz` `b2` ON foo.baz_id = b2.baz_id AND b2.quux_id = 2 INNER JOIN `foo` `f1` ON f1.quux_id = quux.q_id", $stmt->asSql());
     }
 
+    public function testGroupByQuoteCharNameSepSingleBareGroupBy() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom( 'foo' );
+        $stmt->addGroupBy('baz');
+        $this->assertEquals("FROM `foo`\nGROUP BY `baz`", $stmt->asSql());
+    }
+
+    public function testGroupByQuoteCharNameSepSingleGroupByWithDesc() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom('foo');
+        $stmt->addGroupBy('baz', 'DESC');
+        $this->assertEquals("FROM `foo`\nGROUP BY `baz` DESC", $stmt->asSql());
+    }
+
+    public function testGroupByQuoteCharNameSepMultipleGroupBy() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom( 'foo' );
+        $stmt->addGroupBy('baz');
+        $stmt->addGroupBy('quux');
+        $this->assertEquals("FROM `foo`\nGROUP BY `baz`, `quux`", $stmt->asSql());
+    }
+
+    public function testGroupByQuoteCharNameSepMultipleGroupByWithDesc() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom('foo');
+        $stmt->addGroupBy('baz', 'DESC');
+        $stmt->addGroupBy('quux', 'DESC');
+        $this->assertEquals("FROM `foo`\nGROUP BY `baz` DESC, `quux` DESC", $stmt->asSql());
+    }
+
     public function ns($args) {
         return new SQL_Maker_Select($args);
     }

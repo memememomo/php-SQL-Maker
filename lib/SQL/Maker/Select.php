@@ -103,6 +103,7 @@ class SQL_Maker_Select {
             $alias = $table_ref[1];
         } else {
             $table = $table_ref;
+            $alias = null;
         }
 
         if ( is_object( $table ) && method_exists( $table, 'asSql' ) ) {
@@ -155,12 +156,10 @@ class SQL_Maker_Select {
 
             $select_list = array();
             foreach ($this->select as $s) {
-                /*
                 $alias =
                     array_key_exists($s, $this->select_map)
                     ? $this->select_map[ $s ]
                     : '';
-                */
 
                 if ( ! $alias ) {
                     $select_list[] = $this->quote($s);
@@ -186,10 +185,10 @@ class SQL_Maker_Select {
                 $table = $this->_addIndexHint( $table[0], $table[1] ); // index hint handling
                 if ( ! $initial_table_written++ ) { $sql .= $table; }
                 $sql .= ' ' . strtoupper($join['type']) . ' JOIN ' . $this->quote($join['table']);
-                if ( $join['alias'] ) { $sql .= ' ' . $this->quote($join['alias']); }
+                if ( array_key_exists('alias', $join) ) { $sql .= ' ' . $this->quote($join['alias']); }
 
 
-                if ( ! is_null($join['condition']) ) {
+                if ( array_key_exists('condition', $join) && ! is_null($join['condition']) ) {
                     if ( is_array( $join['condition'] ) ) {
                         $condition_list = array();
                         foreach ($join['condition'] as $c) {
@@ -262,7 +261,7 @@ class SQL_Maker_Select {
         return 'ORDER BY ' . implode(', ', $attr_list) . $this->new_line;
     }
 
-    public function addGroupBy($group, $order) {
+    public function addGroupBy($group, $order = null) {
         $this->group_by[] = $order ? $this->quote($group) . " $order" : $this->quote($group);
         return $this;
     }
