@@ -269,6 +269,56 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("FROM foo ORDER BY baz DESC", $stmt->asSql());
     }
 
+    // GROUP BY + ORDER BY
+    public function testGroupByOrderByQuoteCharNameSepGroupByWithOrderBy() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom( 'foo' );
+        $stmt->addGroupBy('quux');
+        $stmt->addOrderBy('baz', 'DESC');
+        $this->assertEquals("FROM `foo`\nGROUP BY `quux`\nORDER BY `baz` DESC", $stmt->asSql());
+    }
+
+    public function testGroupByOrderByQuoteCharNameSepNewLineGroupByWithOrderBy() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom( 'foo' );
+        $stmt->addGroupBy('quux');
+        $stmt->addOrderBy('baz', 'DESC');
+        $this->assertEquals("FROM foo GROUP BY quux ORDER BY baz DESC", $stmt->asSql());
+    }
+
+
+    // LIMIT OFFSET
+    public function testLimitOffsetQuoteCharNameSepBogusLimitCausesAsSqlAssertion() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom('foo');
+        $stmt->limit(5);
+        $this->assertEquals("FROM `foo`\nLIMIT 5", $stmt->asSql());
+        $stmt->offset(10);
+        $this->assertEquals("FROM `foo`\nLIMIT 5 OFFSET 10", $stmt->asSql());
+        $stmt->limit("  15g"); // Non-numerics should cause an error
+        try {
+            $sql = $stmt->asSql();
+        }
+        catch (Exception $e) {
+            $this->assertRegExp('/Non-numerics/', $e->getMessage());
+        }
+    }
+
+    public function testLimitOffsetQuoteCharNameSepNewLineBogusLimitCausesAsSqlAssertion() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom('foo');
+        $stmt->limit(5);
+        $this->assertEquals("FROM foo LIMIT 5", $stmt->asSql());
+        $stmt->offset(10);
+        $this->assertEquals("FROM foo LIMIT 5 OFFSET 10", $stmt->asSql());
+        $stmt->limit("  15g"); // Non-numerics should cause an error
+        try {
+            $sql = $stmt->asSql();
+        }
+        catch (Exception $e) {
+            $this->assertRegExp('/Non-numerics/', $e->getMessage());
+        }
+    }
 
     public function ns($args) {
         return new SQL_Maker_Select($args);
