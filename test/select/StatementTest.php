@@ -156,6 +156,7 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("FROM `foo` INNER JOIN `baz` `b1` ON foo.baz_id = b1.baz_id AND b1.quux_id = 1 LEFT JOIN `baz` `b2` ON foo.baz_id = b2.baz_id AND b2.quux_id = 2 INNER JOIN `foo` `f1` ON f1.quux_id = quux.q_id", $stmt->asSql());
     }
 
+
     public function testGroupByQuoteCharNameSepSingleBareGroupBy() {
         $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
         $stmt->addFrom( 'foo' );
@@ -185,6 +186,89 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $stmt->addGroupBy('quux', 'DESC');
         $this->assertEquals("FROM `foo`\nGROUP BY `baz` DESC, `quux` DESC", $stmt->asSql());
     }
+
+
+    public function testGroupByQuoteCharNameSepNewLineSingleBareGroupBy() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom( 'foo' );
+        $stmt->addGroupBy('baz');
+        $this->assertEquals("FROM foo GROUP BY baz", $stmt->asSql());
+    }
+
+    public function testGroupByQuoteCharNameSepNewLineSingleGroupByWithDesc() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom('foo');
+        $stmt->addGroupBy('baz', 'DESC');
+        $this->assertEquals("FROM foo GROUP BY baz DESC", $stmt->asSql());
+    }
+
+    public function testGroupByQuoteCharNameSepNewLineMultipleGroupBy() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom( 'foo' );
+        $stmt->addGroupBy('baz');
+        $stmt->addGroupBy('quux');
+        $this->assertEquals("FROM foo GROUP BY baz, quux", $stmt->asSql());
+    }
+
+    public function testGroupByQuoteCharNameSepNewLineMultipleGroupByWithDesc() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom('foo');
+        $stmt->addGroupBy('baz', 'DESC');
+        $stmt->addGroupBy('quux', 'DESC');
+        $this->assertEquals("FROM foo GROUP BY baz DESC, quux DESC", $stmt->asSql());
+    }
+
+
+    public function testOrderByQuoteCharNameSepSingleOrderBy() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom( 'foo' );
+        $stmt->addOrderBy('baz', 'DESC');
+        $this->assertEquals("FROM `foo`\nORDER BY `baz` DESC", $stmt->asSql());
+    }
+
+    public function testOrderByQuoteCharNameSepMultipleOrderBy() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom( 'foo' );
+        $stmt->addOrderBy('baz', 'DESC');
+        $stmt->addOrderBy('quux', 'ASC');
+        $this->assertEquals("FROM `foo`\nORDER BY `baz` DESC, `quux` ASC", $stmt->asSql());
+    }
+
+    public function testOrderByQuoteCharNameSepScalarRef() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addFrom( 'foo' );
+
+        // Not scalar ref, using array ref in PHP
+        $stmt->addOrderBy(array('baz DESC'));
+
+        $this->assertEquals("FROM `foo`\nORDER BY baz DESC", $stmt->asSql());
+    }
+
+    public function testOrderByQuoteCharNameSepNewLineSingleOrderBy() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom( 'foo' );
+        $stmt->addOrderBy('baz', 'DESC');
+        $this->assertEquals("FROM foo ORDER BY baz DESC", $stmt->asSql());
+    }
+
+    public function testOrderByQuoteCharNameSepNewLineMultipleOrderBy() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom( 'foo' );
+        $stmt->addOrderBy('baz', 'DESC');
+        $stmt->addOrderBy('quux', 'ASC');
+        $this->assertEquals("FROM foo ORDER BY baz DESC, quux ASC", $stmt->asSql());
+    }
+
+    public function testOrderByQuoteCharNameSepNewLineScalarRef() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addFrom( 'foo' );
+
+        // Not scalar ref, using array ref in PHP
+        $stmt->addOrderBy(array('baz DESC'));
+
+        $this->assertEquals("FROM foo ORDER BY baz DESC", $stmt->asSql());
+    }
+
 
     public function ns($args) {
         return new SQL_Maker_Select($args);
