@@ -76,6 +76,7 @@ class SQL_Maker_Select {
     }
 
     public function addSelect($term, $col = null) {
+
         if ( is_null($col) ) {
             $col = $term;
         }
@@ -158,6 +159,7 @@ class SQL_Maker_Select {
 
             $select_list = array();
             foreach ($this->select as $s) {
+
                 $alias =
                     array_key_exists($s, $this->select_map)
                     ? $this->select_map[ $s ]
@@ -296,7 +298,7 @@ class SQL_Maker_Select {
 
     public function asSqlHaving() {
         if ( $this->having ) {
-            return 'HAVING ' . $this->having->asSql() . $this->newLine();
+            return 'HAVING ' . $this->having->asSql() . $this->newLine;
         } else {
             return '';
         }
@@ -336,7 +338,7 @@ class SQL_Maker_Select {
                 $list_list[] = $this->quote($l);
             }
 
-            $type = $hint['type'] ? uc($hint['type']) : uc('USE');
+            $type = $hint['type'] ? strtoupper($hint['type']) : strtoupper('USE');
             return $quoted . ' ' . $type . ' INDEX (' .
                 implode(',', $list_list) .
                 ')';

@@ -9,6 +9,7 @@ require_once('SQL/Maker/Select.php');
 
 class StatementTest extends PHPUnit_Framework_TestCase {
 
+    // Prefix
     public function testPrefixQuoteCharNameSepSimple() {
         $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
         $stmt->addSelect('*');
@@ -39,7 +40,7 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("SELECT SQL_CALC_FOUND_ROWS * FROM `foo`", $stmt->asSql());
     }
 
-
+    // FROM
     public function testFromQuoteCharNameSepSingle() {
         $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
         $stmt->addFrom('foo');
@@ -61,6 +62,7 @@ class StatementTest extends PHPUnit_Framework_TestCase {
     }
 
 
+    // JOIN
     public function testJoinQuoteCharNameSepInnerJoin() {
         $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
         $stmt->addJoin(
@@ -157,6 +159,7 @@ class StatementTest extends PHPUnit_Framework_TestCase {
     }
 
 
+    // GROUP BY
     public function testGroupByQuoteCharNameSepSingleBareGroupBy() {
         $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
         $stmt->addFrom( 'foo' );
@@ -219,6 +222,7 @@ class StatementTest extends PHPUnit_Framework_TestCase {
     }
 
 
+    // ORDER BY
     public function testOrderByQuoteCharNameSepSingleOrderBy() {
         $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
         $stmt->addFrom( 'foo' );
@@ -389,9 +393,290 @@ class StatementTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('baz', $b[1]);
     }
 
+    // addSelect
+    public function testAddSelectQuoteCharNameSepSimple() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addSelect('bar');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT `foo`, `bar`\nFROM `baz`", $stmt->asSql());
+    }
+
+    public function todoAddSelectQuoteCharNameSepWithScalarRef() {
+        // TODO
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addSelect('f.foo', 'foo');
+        $stmt->addSelect(
+                         SQL_Maker::raw('COUNT(*)'),
+                         'count');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT `f`.`foo`, COUNT(*) AS `count`\nFROM `baz`", $stmt->asSql());
+    }
+
+    public function testAddSelectQuoteCharNameSepNewLineSimple() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addSelect('bar');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT foo, bar FROM baz", $stmt->asSql());
+    }
+
+    public function todoAddSelectQuoteCharNameSepNewLineWithScalarRef() {
+        // TODO
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addSelect('f.foo', 'foo');
+        $stmt->addSelect(
+                         SQL_Maker::raw('COUNT(*)'),
+                         'count');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT f.foo, COUNT(*) AS count\nFROM baz", $stmt->asSql());
+    }
+
+    // Having
+    public function todoHavingQuoteCharNameSep() {
+        $stmt = $this->ns( array('quote_char' => '`', 'name_sep' => '.') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addSelect(
+                         SQL_Maker::raw('COUNT(*)', 'count')
+                         );
+        $stmt->addFrom( 'baz' );
+        $stmt->addWhere('foo', 1);
+        $stmt->addGroupBy('baz');
+        $stmt->addOrderBy('foo', 'DESC');
+        $stmt->limit(2);
+        $stmt->addHaving('count', 2);
+        $this->assertEquals("SELECT `foo`, COUNT(*) AS `count`\nFROM `baz`\nWHERE (`foo` = ?)\nGROUP BY `baz`\nHAVING (COUNT(*) = ?)\nORDER BY `foo` DESC\nLIMIT 2", $stmt->asSql());
+    }
+
+    public function todoHavingQuoteCharNameSepNewLine() {
+        $stmt = $this->ns( array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' ') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addSelect(
+                         SQL_Maker::raw('COUNT(*)'),
+                         'count'
+                         );
+        $stmt->addFrom('baz');
+        $stmt->addWhere('foo', 1);
+        $stmt->addGroupBy('baz');
+        $stmt->addOrderBy('foo', 'DESC');
+        $stmt->limit(2);
+        $stmt->addHaving('count', 2);
+        $this->assertEquals("SELECT `foo`, COUNT(*) AS `count`\nFROM `baz`\nWHERE (`foo` = ?)\nGROUP BY `baz`\nHAVING (COUNT(*) = ?)\nORDER BY `foo` DESC\nLIMIT 2", $stmt->asSql());
+    }
+
+
+    // DESTINCT
+    public function testDistinctQuoteCharNameSep() {
+        $stmt = $this->ns( array('quote_char' => '`', 'name_sep' => '.') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT `foo`\nFROM `baz`", $stmt->asSql());
+        $stmt->distinct = 1;
+        $this->assertEquals("SELECT DISTINCT `foo`\nFROM `baz`", $stmt->asSql());
+    }
+
+    public function testDistinctQuoteCharNameSepNewLine() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT foo FROM baz", $stmt->asSql());
+        $stmt->distinct = 1;
+        $this->assertEquals("SELECT DISTINCT foo FROM baz", $stmt->asSql());
+    }
+
+
+    // index hint
+    public function testIndexHintQuoteCharNameSep() {
+        $stmt = $this->ns(array('quote_char' => '`', 'name_sep' => '.'));
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT `foo`\nFROM `baz`", $stmt->asSql());
+        $stmt->addIndexHint(
+                            'baz',
+                            array(
+                                  'type' => 'USE',
+                                  'list' => array('index_hint')
+                                  )
+                            );
+        $this->assertEquals("SELECT `foo`\nFROM `baz` USE INDEX (`index_hint`)", $stmt->asSql());
+    }
+
+    public function testIndexHintQuoteCharNameSepNewLine() {
+        $stmt = $this->ns(array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT foo FROM baz", $stmt->asSql());
+        $stmt->addIndexHint(
+                            'baz',
+                            array(
+                                  'type' => 'USE',
+                                  'list' => array('index_hint')
+                                  )
+                            );
+        $this->assertEquals("SELECT foo FROM baz USE INDEX (index_hint)", $stmt->asSql());
+    }
+
+
+    // index hint with joins
+    public function testIndexHintWithJoinsQuoteCharNameSep() {
+
+        $stmt = $this->ns( array('quote_char' => '`', 'name_sep' => '.') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addIndexHint(
+                            'baz',
+                            array(
+                                  'type' => 'USE',
+                                  'list' => array('index_hint')
+                                  )
+                            );
+        $stmt->addJoin(
+                       'baz',
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'condition' => 'baz.baz_id = foo.baz_id'
+                             )
+                       );
+        $this->assertEquals("SELECT `foo`\nFROM `baz` USE INDEX (`index_hint`) INNER JOIN `baz` ON baz.baz_id = foo.baz_id", $stmt->asSql());
+
+
+
+        $stmt = $this->ns( array('quote_char' => '`', 'name_sep' => '.') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addIndexHint(
+                            'baz',
+                            array(
+                                  'type' => 'USE',
+                                  'list' => array('index_hint')
+                                  )
+                            );
+        $stmt->addJoin(
+                       'baz',
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'alias'     => 'b1',
+                             'condition' => 'baz.baz_id = b1.baz_id AND b1.quux_id = 1'
+                             )
+                       );
+        $stmt->addJoin(
+                       'baz',
+                       array(
+                             'type'      => 'left',
+                             'table'     => 'baz',
+                             'alias'     => 'b2',
+                             'condition' => 'baz.baz_id = b2.baz_id AND b2.quux_id = 2'
+                             )
+                       );
+        $this->assertEquals("SELECT `foo`\nFROM `baz` USE INDEX (`index_hint`) INNER JOIN `baz` `b1` ON baz.baz_id = b1.baz_id AND b1.quux_id = 1 LEFT JOIN `baz` `b2` ON baz.baz_id = b2.baz_id AND b2.quux_id = 2", $stmt->asSql());
+
+    }
+
+
+    public function testIndexHintWithJoinsQuoteCharNameSepNewLine() {
+
+        $stmt = $this->ns( array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' ') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addIndexHint(
+                            'baz',
+                            array(
+                                  'type' => 'USE',
+                                  'list' => array('index_hint')
+                                  )
+                            );
+        $stmt->addJoin(
+                       'baz',
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'condition' => 'baz.baz_id = foo.baz_id'
+                             )
+                       );
+        $this->assertEquals("SELECT foo FROM baz USE INDEX (index_hint) INNER JOIN baz ON baz.baz_id = foo.baz_id", $stmt->asSql());
+
+
+
+        $stmt = $this->ns( array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' ') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addIndexHint(
+                            'baz',
+                            array(
+                                  'type' => 'USE',
+                                  'list' => array('index_hint')
+                                  )
+                            );
+        $stmt->addJoin(
+                       'baz',
+                       array(
+                             'type'      => 'inner',
+                             'table'     => 'baz',
+                             'alias'     => 'b1',
+                             'condition' => 'baz.baz_id = b1.baz_id AND b1.quux_id = 1'
+                             )
+                       );
+        $stmt->addJoin(
+                       'baz',
+                       array(
+                             'type'      => 'left',
+                             'table'     => 'baz',
+                             'alias'     => 'b2',
+                             'condition' => 'baz.baz_id = b2.baz_id AND b2.quux_id = 2'
+                             )
+                       );
+        $this->assertEquals("SELECT foo FROM baz USE INDEX (index_hint) INNER JOIN baz b1 ON baz.baz_id = b1.baz_id AND b1.quux_id = 1 LEFT JOIN baz b2 ON baz.baz_id = b2.baz_id AND b2.quux_id = 2", $stmt->asSql());
+
+    }
+
+
+    // select + from
+    public function testSelectFromQuoteCharNameSep() {
+        $stmt = $this->ns( array('quote_char' => '`', 'name_sep' => '.') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT `foo`\nFROM `baz`", $stmt->asSql());
+    }
+
+    public function testSelectFromQuoteCharNameSepNewLine() {
+        $stmt = $this->ns( array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' ') );
+        $stmt->addSelect('foo', 'foo');
+        $stmt->addFrom('baz');
+        $this->assertEquals("SELECT foo FROM baz", $stmt->asSql());
+    }
+
+
+    // join_with_using
+    public function testJoinWithUsingQuoteCharNameSep() {
+        $sql = $this->ns( array('quote_char' => '`', 'name_sep' => '.') );
+        $sql->addJoin(
+                      'foo',
+                      array(
+                            'type' => 'inner',
+                            'table' => 'baz',
+                            'condition' => array('hoge_id', 'fuga_id')
+                            )
+                      );
+        $this->assertEquals("FROM `foo` INNER JOIN `baz` USING (`hoge_id`, `fuga_id`)", $sql->asSql());
+    }
+
+    public function testJoinWithUsingQuoteCharNameSepNewLine() {
+        $sql = $this->ns( array('quote_char' => '', 'name_sep' => '.', 'new_line' => ' ') );
+        $sql->addJoin(
+                      'foo',
+                      array(
+                            'type' => 'inner',
+                            'table' => 'baz',
+                            'condition' => array('hoge_id', 'fuga_id')
+                            )
+                      );
+        $this->assertEquals("FROM foo INNER JOIN baz USING (hoge_id, fuga_id)", $sql->asSql());
+    }
 
     public function ns($args) {
         return new SQL_Maker_Select($args);
     }
 
 }
+
+
+
+
