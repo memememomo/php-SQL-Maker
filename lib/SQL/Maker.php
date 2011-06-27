@@ -118,6 +118,7 @@ class SQL_Maker {
     }
 
     public function delete($table, $where = array()) {
+        $where = SQL_Maker_Util::to_array($where);
         $w = $this->makeWhereClause($where);
         $quoted_table = $this->quote($table);
         $sql = "DELETE FROM $quoted_table" . $w[0];
