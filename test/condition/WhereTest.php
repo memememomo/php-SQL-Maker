@@ -9,6 +9,7 @@ require('SQL/Maker.php');
 
 class WhereTest extends PHPUnit_Framework_TestCase {
 
+    // and
     public function testAnd() {
         list($w1, $w2) = $this->prepare();
 
@@ -21,6 +22,7 @@ class WhereTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('1, 2, 3, 4, 99', implode(', ', $and->bind()));
     }
 
+    // or
     public function testOr() {
         list($w1, $w2) = $this->prepare();
 

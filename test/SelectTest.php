@@ -9,6 +9,8 @@ require_once('SQL/Maker.php');
 
 class SelectTest extends PHPUnit_Framework_TestCase {
 
+
+    // driver sqlite
     public function testDriverSqliteColumnsAndTables() {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
         list($sql, $binds) = $builder->select('foo', array('*'));
@@ -176,6 +178,7 @@ class SelectTest extends PHPUnit_Framework_TestCase {
 
 
 
+    // driver mysql
     public function testDriverMysqlColumnsAndTables() {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
         list($sql, $binds) = $builder->select( 'foo', array( '*' ) );
@@ -368,6 +371,7 @@ class SelectTest extends PHPUnit_Framework_TestCase {
 
 
 
+    // driver: mysql, quote_char: "", new_line: " "
     public function testDriverMysqlQuoteCharNewLineColumnsAndTables() {
         $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
 

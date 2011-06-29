@@ -9,6 +9,8 @@ require_once('SQL/Maker.php');
 
 class SubqueryTest extends PHPUnit_Framework_TestCase {
 
+
+    // select_subquery
     public function testSelectSubqueryDriverSqlite() {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
 
@@ -40,6 +42,7 @@ class SubqueryTest extends PHPUnit_Framework_TestCase {
     }
 
 
+    // subquery_and_join
     public function testSubqueryAndJoin() {
         $subquery = new SQL_Maker_Select(array( 'quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
         $subquery->addSelect('*');
@@ -61,6 +64,8 @@ class SubqueryTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("fuga", implode(',', $stmt->bind()));
     }
 
+
+    // complex
     public function testComplex() {
         $s1 = new SQL_Maker_Select(array( 'quote_char' => '', 'name_sep' => '.', 'new_line' => ' '));
         $s1->addSelect('*');

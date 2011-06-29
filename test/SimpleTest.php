@@ -8,6 +8,7 @@ require('SQL/Maker.php');
 
 class SimpleTest extends PHPUnit_Framework_TestCase {
 
+    // select_query
     public function testSelectQuerySqlite() {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
 
@@ -47,6 +48,7 @@ class SimpleTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("baz,man", implode(',', $stmt->bind()));
     }
 
+    // new condition
     public function testNewCondition() {
         $builder = new SQL_Maker(array('driver' => 'sqlite', 'quote_char' => '`', 'name_sep' => '.'));
         $cond = $builder->newCondition();
@@ -55,6 +57,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('.', $cond->name_sep);
     }
 
+
+    // new_select
     public function testNewSelectSqlite() {
         $builder = new SQL_Maker(array('driver' => 'sqlite', 'quote_char' => '`', 'name_sep' => '.'));
         $select = $builder->newSelect();
@@ -63,6 +67,7 @@ class SimpleTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('.', $select->name_sep);
         $this->assertEquals("\n", $select->new_line);
     }
+
 
     public function testNewSelectSQLiteQuoteCharNewLine() {
         $builder = new SQL_Maker(array('driver' => 'sqlite', 'quote_char' => '`', 'name_sep' => '.'));

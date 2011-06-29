@@ -8,6 +8,8 @@ require_once('SQL/Maker.php');
 
 class DeleteTest extends PHPUnit_Framework_TestCase {
 
+
+    // driver sqlite
     public function testDriverSqliteSimple() {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
 
@@ -27,6 +29,8 @@ class DeleteTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('', implode(',', $binds));
     }
 
+
+    // driver mysql
     public function testDriverMysqlSimple() {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
 
@@ -46,6 +50,8 @@ class DeleteTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('', implode(',', $binds));
     }
 
+
+    // driver mysql, quote_char: "", new_line: " "
     public function testDriverMysqlQuoteCharNewLineSimple() {
         $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
 

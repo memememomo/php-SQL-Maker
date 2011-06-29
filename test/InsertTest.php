@@ -8,6 +8,8 @@ require_once('SQL/Maker.php');
 
 class InsertTest extends PHPUnit_Framework_TestCase {
 
+
+    // driver sqlite
     public function testDriverSqliteHashColumn() {
 
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
@@ -79,6 +81,7 @@ class InsertTest extends PHPUnit_Framework_TestCase {
     }
 
 
+    // driver mysql
     public function testDriverMysqlHash() {
 
         $builder = new SQL_Maker(array('driver' => 'mysql'));

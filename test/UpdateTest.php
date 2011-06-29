@@ -9,6 +9,8 @@ require_once('SQL/Maker.php');
 
 class UpdateTest extends PHPUnit_Framework_TestCase {
 
+
+    // driver: sqlite
     public function testdriverSqliteArrayWhereCause() {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
 
@@ -75,6 +77,7 @@ class UpdateTest extends PHPUnit_Framework_TestCase {
     }
 
 
+    // driver: mysql
     public function testDriverMysqlArrayWhereCause() {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
 
@@ -141,6 +144,7 @@ class UpdateTest extends PHPUnit_Framework_TestCase {
     }
 
 
+    // driver: mysql, quote_char: "", new_line: " "
     public function testDriverMysqlQuoteCharNewLineArrayWhereCause() {
         $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
 
