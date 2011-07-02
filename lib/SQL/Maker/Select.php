@@ -1,4 +1,5 @@
 <?php
+
 require_once('SQL/Maker.php');
 require_once('SQL/Maker/Util.php');
 require_once('SQL/Maker/Condition.php');
@@ -32,7 +33,7 @@ class SQL_Maker_Select {
             : $default;
     }
 
-    public function __construct($args) {
+    public function __construct($args = array()) {
         $this->initArg('select', $args, array());
         $this->initArg('distinct', $args, 0);
         $this->initArg('select_map', $args, array());
