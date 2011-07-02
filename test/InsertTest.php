@@ -31,10 +31,10 @@ class InsertTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
 
         $values = array();
-        $values[] = array('bar', 'baz');
-        $values[] = array('john', 'man');
-        $values[] = array('created_on', array("datetime('now')"));
-        $values[] = array('updated_on', array("datetime(?)", "now"));
+        $values[] = array('bar'  => 'baz');
+        $values[] = array('john' => 'man');
+        $values[] = array('created_on' => array("datetime('now')"));
+        $values[] = array('updated_on' => array("datetime(?)", "now"));
 
         list($sql, $binds) = $builder->insert('foo', $values);
         $this->assertEquals("INSERT INTO \"foo\"\n(\"bar\", \"john\", \"created_on\", \"updated_on\")\nVALUES (?, ?, datetime('now'), datetime(?))", $sql);
@@ -66,10 +66,10 @@ class InsertTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
 
         $values = array();
-        $values[] = array('bar', 'baz');
-        $values[] = array('john', 'man');
-        $values[] = array('created_on', array("datetime('now')"));
-        $values[] = array('updated_on', array("datetime(?)", "now"));
+        $values[] = array('bar'  => 'baz');
+        $values[] = array('john' => 'man');
+        $values[] = array('created_on' => array("datetime('now')"));
+        $values[] = array('updated_on' => array("datetime(?)", "now"));
 
         $opt = array();
         $opt['prefix'] = 'INSERT IGNORE';
@@ -87,7 +87,7 @@ class InsertTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
 
         $values = array();
-        $values['bar'] = 'baz';
+        $values['bar']  = 'baz';
         $values['john'] = 'man';
         $values['created_on'] = array('NOW()');
         $values['updated_on'] = array('FROM_UNIXTIME(?)', 1302536204);
@@ -103,10 +103,10 @@ class InsertTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
 
         $values = array();
-        $values[] = array('bar', 'baz');
-        $values[] = array('john', 'man');
-        $values[] = array('created_on', array('NOW()'));
-        $values[] = array('updated_on', array('FROM_UNIXTIME(?)', 1302536204));
+        $values[] = array('bar'  => 'baz');
+        $values[] = array('john' => 'man');
+        $values[] = array('created_on' => array('NOW()'));
+        $values[] = array('updated_on' => array('FROM_UNIXTIME(?)', 1302536204));
 
         list($sql, $binds) = $builder->insert('foo', $values);
         $this->assertEquals("INSERT INTO `foo`\n(`bar`, `john`, `created_on`, `updated_on`)\nVALUES (?, ?, NOW(), FROM_UNIXTIME(?))", $sql);
@@ -119,7 +119,7 @@ class InsertTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
 
         $values = array();
-        $values['bar'] = 'baz';
+        $values['bar']  = 'baz';
         $values['john'] = 'man';
         $values['created_on'] = array('NOW()');
         $values['updated_on'] = array('FROM_UNIXTIME(?)', 1302536204);
@@ -138,10 +138,10 @@ class InsertTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
 
         $values = array();
-        $values[] = array('bar', 'baz');
-        $values[] = array('john', 'man');
-        $values[] = array('created_on', array('NOW()'));
-        $values[] = array('updated_on', array('FROM_UNIXTIME(?)', 1302536204));
+        $values[] = array('bar'  => 'baz');
+        $values[] = array('john' => 'man');
+        $values[] = array('created_on' => array('NOW()'));
+        $values[] = array('updated_on' => array('FROM_UNIXTIME(?)', 1302536204));
 
         $opt = array();
         $opt['prefix'] = 'INSERT IGNORE';

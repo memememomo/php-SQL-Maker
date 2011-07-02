@@ -80,8 +80,13 @@ class SQL_Maker {
 
         for ($i = 0; $i < count($values); $i++) {
             $pair = $values[ $i ];
-            $col = $pair[0];
-            $val = $pair[1];
+
+            if ( SQL_Maker_Util::is_hash( $pair ) ) {
+                foreach ($pair as $col => $val) {}
+            } else {
+                $col = $pair[0];
+                $val = $pair[1];
+            }
 
             $quoted_columns[] = $this->quote($col);
             if (is_array($val)) {
