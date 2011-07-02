@@ -13,10 +13,10 @@ class SQL_Maker_Select_Oracle extends SQL_Maker_Select {
         $offset = $this->offset;
 
         if ( ! is_null($limit) && ! is_null($offset) ) {
-            $this->addSelect( SQL_Maker::raw("ROW_NUMBER() OVER (ORDER BY 1) R") );
+            $this->addSelect( SQL_Maker::scalar("ROW_NUMBER() OVER (ORDER BY 1) R") );
         }
 
-        $sql = parent::asSql($args);
+        $sql = parent::asSql();
 
         if ( ! is_null($limit) ) {
             $sql = "SELECT * FROM ( $sql ) WHERE ";
@@ -26,6 +26,7 @@ class SQL_Maker_Select_Oracle extends SQL_Maker_Select {
                 $sql = $sql . " rownum <= $limit";
             }
         }
+
         return $sql;
     }
 }

@@ -2,7 +2,7 @@
 
 class SQL_Maker_Util {
     static public function quoteIdentifier($label, $quote_char, $name_sep) {
-        if (strcmp($label, '*') == 0) {
+        if ( is_string($label) && strcmp($label, '*') === 0 ) {
             return $label;
         }
 

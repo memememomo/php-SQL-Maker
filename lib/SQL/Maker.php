@@ -16,7 +16,7 @@ class SQL_Maker {
         $driver = $args['driver'];
 
         if ( ! array_key_exists('quote_char', $args) ) {
-            if ( strcmp($driver, "mysql") == 0 ) {
+            if ( strcmp($driver, "mysql") === 0 ) {
                 $this->quote_char = '`';
             } else {
                 $this->quote_char = '"';
@@ -26,7 +26,7 @@ class SQL_Maker {
         }
 
         $this->select_class =
-            strcmp($driver, 'Oracle') == 0
+            strcmp($driver, 'Oracle') === 0
             ? 'SQL_Maker_Select_Oracle'
             : 'SQL_Maker_Select';
 

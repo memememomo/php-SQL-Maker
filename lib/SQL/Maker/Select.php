@@ -34,6 +34,7 @@ class SQL_Maker_Select {
 
     public function __construct($args) {
         $this->initArg('select', $args, array());
+        $this->initArg('distinct', $args, 0);
         $this->initArg('select_map', $args, array());
         $this->initArg('select_map_reverse', $args, array());
         $this->initArg('from', $args, array());
@@ -41,12 +42,11 @@ class SQL_Maker_Select {
         $this->initArg('index_hint', $args, array());
         $this->initArg('group_by', $args, array());
         $this->initArg('order_by', $args, array());
-        $this->initArg('subqueries', $args, array());
         $this->initArg('prefix', $args, 'SELECT ');
-        $this->initArg('distinct', $args, 0);
-        $this->initArg('quote_char', $args, '`');
-        $this->initArg('name_sep', $args, ".");
+        $this->initArg('quote_char', $args, '');
+        $this->initArg('name_sep', $args, "");
         $this->initArg('new_line', $args, "\n");
+        $this->initArg('subqueries', $args, array());
     }
 
     public function newCondition() {
@@ -77,7 +77,7 @@ class SQL_Maker_Select {
 
     public function addSelect($term, $col = null) {
 
-        if ( is_null($col) ) {
+        if ( !$col ) {
             $col = $term;
         }
 
@@ -146,6 +146,10 @@ class SQL_Maker_Select {
             return $label[0];
         }
 
+        if ( SQL_Maker::is_scalar($label) ) {
+            return $label->raw();
+        }
+
         return SQL_Maker_Util::quoteIdentifier($label, $this->quote_char, $this->name_sep);
     }
 
@@ -160,14 +164,15 @@ class SQL_Maker_Select {
             $select_list = array();
             foreach ($this->select as $s) {
 
-                $alias =
-                    array_key_exists($s, $this->select_map)
-                    ? $this->select_map[ $s ]
-                    : '';
+                foreach ($this->select_map as $map) {
+                    if ( $s == $map[0] ) {
+                        $alias = $map[1];
+                    }
+                }
 
                 if ( ! $alias ) {
                     $select_list[] = $this->quote($s);
-                } else if ( $alias && preg_match("/(^|\.)$alias/", $s)  ) {
+                } else if ( $alias && $alias == $s ) {
                     $select_list[] = $this->quote($s);
                 } else {
                     $select_list[] = $this->quote($s) . ' AS ' . $this->quote($alias);
@@ -305,8 +310,11 @@ class SQL_Maker_Select {
     }
 
     public function addHaving($col, $val) {
-        if ($this->select_map_reverse[$col]) {
-            $col = $this->select_map_reverse[$col];
+
+        foreach ($this->select_map_reverse as $map) {
+            if ( $col == $map[0] ) {
+                $col = $map[1];
+            }
         }
 
         if ( ! $this->having ) {

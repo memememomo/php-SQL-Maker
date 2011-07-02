@@ -8,14 +8,14 @@ require_once('SQL/Maker/Select/Oracle.php');
 
 class OracleTest extends PHPUnit_Framework_TestCase {
 
-    public function todoOracle() {
+    public function testOracle() {
         $sel = new SQL_Maker_Select_Oracle(
                                            array(
                                                  'new_line' => ' '
                                                  )
                                            );
-        $sel =
-            $sel->addSelect('foo')
+        $sel
+            ->addSelect('foo')
             ->addFrom('user')
             ->limit(10)
             ->offset(20);
