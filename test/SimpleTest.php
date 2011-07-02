@@ -17,8 +17,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase {
         $fields = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         $opt = array();
         $opt['order_by'] = 'yo';
@@ -36,8 +36,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase {
         $fields = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         $opt = array();
         $opt['order_by'] = 'yo';
