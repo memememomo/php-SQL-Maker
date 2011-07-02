@@ -307,15 +307,15 @@ class SQL_Maker {
     }
 
 
-    public function raw($str) {
-        return new SQL_Maker_Raw_String($str);
+    public function scalar($str) {
+        return new SQL_Maker_Scalar($str);
     }
 
 
-    public function is_raw($string) {
+    public function is_scalar($string) {
         if ( is_object( $string ) ) {
             $class_name = get_class( $string );
-            if ( strcmp($class_name, 'SQL_Maker_Raw_String') === 0 ) {
+            if ( strcmp($class_name, 'SQL_Maker_Scalar') === 0 ) {
                 return true;
             }
             else {
@@ -330,11 +330,14 @@ class SQL_Maker {
 }
 
 
-class SQL_Maker_Raw_String {
-    public $string;
+class SQL_Maker_Scalar {
+    public $data;
 
-    public function __construct($str) {
-        $this->string = $str;
+    public function __construct($d) {
+        $this->data = $d;
     }
 
+    public function raw() {
+        return $this->data;
+    }
 }

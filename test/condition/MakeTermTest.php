@@ -50,6 +50,7 @@ class MakeTermTest extends PHPUnit_Framework_TestCase {
                                               'name_sep'   => '.',
                                               )
                                         );
+
         $cond->add($source[0], $source[1]);
         $sql = $cond->asSql();
         $sql = preg_replace("/^\(/", "", $sql);
