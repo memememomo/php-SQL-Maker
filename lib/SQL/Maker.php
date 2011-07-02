@@ -198,6 +198,7 @@ class SQL_Maker {
                 $col = $where[$i][0];
                 $val = $where[$i][1];
             }
+
             $w->add($col, $val);
         }
         $sql = $w->asSql(1);
@@ -252,8 +253,12 @@ class SQL_Maker {
         if ( $where ) {
             $where = SQL_Maker_Util::to_array( $where );
             for ($i = 0; $i < count($where); $i++) {
-                $col = $where[$i][0];
-                $val = $where[$i][1];
+                if ( SQL_Maker_Util::is_hash( $where[$i] ) ) {
+                    foreach ($where[$i] as $col => $val) {}
+                } else {
+                    $col = $where[$i][0];
+                    $val = $where[$i][1];
+                }
                 $stmt->addWhere($col, $val);
             }
         }

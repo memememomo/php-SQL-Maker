@@ -26,7 +26,7 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $fields = array('foo', 'bar');
 
         $where = array();
-        $where['bar'] = 'baz';
+        $where['bar']  = 'baz';
         $where['john'] = 'man';
 
         list($sql, $binds) = $builder->select($table, $fields, $where);
@@ -42,8 +42,8 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $fields = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         list($sql, $binds) = $builder->select($table, $fields, $where);
         $this->assertEquals("SELECT \"foo\", \"bar\"\nFROM \"foo\"\nWHERE (\"bar\" = ?) AND (\"john\" = ?)", $sql);
@@ -58,7 +58,7 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $fields = array('foo', 'bar');
 
         $where = array();
-        $where['bar'] = 'baz';
+        $where['bar']  = 'baz';
         $where['john'] = 'man';
 
         $opt = array();
@@ -77,8 +77,8 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $fields = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         $opt = array();
         $opt['order_by'] = 'yo';
@@ -97,8 +97,8 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $fields = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         $opt = array();
         $opt['order_by'] = 'yo';
@@ -193,7 +193,7 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $columns = array('foo', 'bar');
 
         $where = array();
-        $where['bar'] = 'baz';
+        $where['bar']  = 'baz';
         $where['john'] = 'man';
 
         list($sql, $binds) = $builder->select( $table, $columns, $where );
@@ -209,8 +209,8 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $columns = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         list($sql, $binds) = $builder->select( $table, $columns, $where );
         $this->assertEquals("SELECT `foo`, `bar`\nFROM `foo`\nWHERE (`bar` = ?) AND (`john` = ?)", $sql);
@@ -225,7 +225,7 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $columns = array('foo', 'bar');
 
         $where = array();
-        $where['bar'] = 'baz';
+        $where['bar']  = 'baz';
         $where['john'] = 'man';
 
         $opt = array();
@@ -244,8 +244,8 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $columns = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         $opt = array();
         $opt['order_by'] = 'yo';
@@ -263,8 +263,8 @@ class SelectTest extends PHPUnit_Framework_TestCase {
         $columns = array('foo', 'bar');
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         $opt = array();
         $opt['order_by'] = 'yo';
