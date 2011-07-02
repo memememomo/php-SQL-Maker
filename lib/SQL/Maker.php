@@ -118,7 +118,6 @@ class SQL_Maker {
     }
 
     public function delete($table, $where = array()) {
-        $where = SQL_Maker_Util::to_array($where);
         $w = $this->makeWhereClause($where);
         $quoted_table = $this->quote($table);
         $sql = "DELETE FROM $quoted_table" . $w[0];
@@ -171,7 +170,6 @@ class SQL_Maker {
             }
         }
 
-        $where = SQL_Maker_Util::to_array( $where );
         $w = $this->makeWhereClause($where);
         $bind_columns = array_merge($bind_columns, $w[1]);
 
@@ -186,9 +184,15 @@ class SQL_Maker {
                                            'name_sep'   => $this->name_sep
                                            ));
 
+        $where = SQL_Maker_Util::to_array($where);
         for ($i = 0; $i < count($where); $i++) {
-            $col = $where[$i][0];
-            $val = $where[$i][1];
+            if ( SQL_Maker_Util::is_hash($where[$i]) ) {
+                foreach ($where[$i] as $col => $val) {
+                }
+            } else {
+                $col = $where[$i][0];
+                $val = $where[$i][1];
+            }
             $w->add($col, $val);
         }
         $sql = $w->asSql(1);

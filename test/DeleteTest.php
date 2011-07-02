@@ -14,8 +14,8 @@ class DeleteTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'sqlite'));
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         list($sql, $binds) = $builder->delete('foo', $where);
         $this->assertEquals('DELETE FROM "foo" WHERE ("bar" = ?) AND ("john" = ?)', $sql);
@@ -35,8 +35,8 @@ class DeleteTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'mysql'));
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         list($sql, $binds) = $builder->delete('foo', $where);
         $this->assertEquals($sql, 'DELETE FROM `foo` WHERE (`bar` = ?) AND (`john` = ?)', $sql);
@@ -56,8 +56,8 @@ class DeleteTest extends PHPUnit_Framework_TestCase {
         $builder = new SQL_Maker(array('driver' => 'mysql', 'quote_char' => '', 'new_line' => ' '));
 
         $where = array();
-        $where[] = array('bar', 'baz');
-        $where[] = array('john', 'man');
+        $where[] = array('bar'  => 'baz');
+        $where[] = array('john' => 'man');
 
         list($sql, $binds) = $builder->delete('foo', $where);
         $this->assertEquals('DELETE FROM foo WHERE (bar = ?) AND (john = ?)', $sql);
