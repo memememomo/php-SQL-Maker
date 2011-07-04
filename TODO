@@ -1,3 +1,2 @@
-・condition/02_make_term.tのテストを通るようにする
-・orとandの演算子のオーバーロードの対応する
-・SQL_Maker_Select_Oracle.phpを実装
+・orとandの演算子のオーバーロードに対応する
+・プラグイン機能を実装する
