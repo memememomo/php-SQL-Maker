@@ -89,9 +89,9 @@ SQL::Maker - SQL builder written in perl.
 
 ## insert()
 
-   $table = 'pokedex';
+      $table = 'pokedex';
    
-   $values = array(
+      $values = array(
                    'id' => 25,
                    'name' => 'Pikachu'
 		                   );
@@ -109,18 +109,18 @@ SQL::Maker - SQL builder written in perl.
 
 ## update()
 
-   $table = 'pokedex';
+      $table = 'pokedex';
+      
+      $set   = array('type' => 'electric');
+      
+      $where = array('id' => 25);
+       
+      list($sql, $binds) = $builder->update($table, $set, $where);
    
-   $set   = array('type' => 'electric');
-   
-   $where = array('id' => 25);
-   
-   list($sql, $binds) = $builder->update($table, $set, $where);
-   
-   /*
-    * $sql   => "UPDATE pokedex SET type = ? WHERE (id = ?)"
-     * $binds => ("electric", 25)
-      */
+      /*
+       * $sql   => "UPDATE pokedex SET type = ? WHERE (id = ?)"
+       * $binds => ("electric", 25)
+       */
 
 
 
