@@ -165,6 +165,7 @@ class SQL_Maker_Select {
             $select_list = array();
             foreach ($this->select as $s) {
 
+                $alias = null;
                 foreach ($this->select_map as $map) {
                     if ( $s == $map[0] ) {
                         $alias = $map[1];
