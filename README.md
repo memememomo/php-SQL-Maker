@@ -92,17 +92,17 @@ SQL::Maker - SQL builder written in perl.
       $table = 'pokedex';
    
       $values = array(
-                   'id' => 25,
-                   'name' => 'Pikachu'
-		                   );
+             'id' => 25,
+             'name' => 'Pikachu'
+	);
 						
-						list($sql, $binds) = $builder->insert($table, $values);
+	list($sql, $binds) = $builder->insert($table, $values);
 						
 						
-						/*
-						 * $sql   => "INSERT INTO pokedex (name, id) VALUES (?, ?)"
-						  * $binds => ("Pikachu", 25)
- 						   */
+	/*
+	 * $sql   => "INSERT INTO pokedex (name, id) VALUES (?, ?)"
+	 * $binds => ("Pikachu", 25)
+ 	 */
 
 
 
@@ -127,13 +127,13 @@ SQL::Maker - SQL builder written in perl.
 
 ## method chain
 
-   	    $sql = new SQL_Maker_Select();
-	      
-	        $sql
-		  ->addSelect('foo')
-		    ->addSelect('bar')
-		      ->addSelect('baz')
-		        ->addFrom('table_name')
-			  ->asSql();
-			    
-			      // => "SELECT foo, bar, baz FROM table
+       $sql = new SQL_Maker_Select();
+       
+       $sql
+       　->addSelect('foo')
+       　->addSelect('bar')
+       　->addSelect('baz')
+       　->addFrom('table_name')
+       　->asSql();
+       　
+      　 // => "SELECT foo, bar, baz FROM table
