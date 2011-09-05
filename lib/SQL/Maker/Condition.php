@@ -77,8 +77,14 @@ class SQL_Maker_Condition {
                 return array($this->quote($col) . " BETWEEN ? AND ?", $v);
             }
             else {
-                // make_term('foo', array( '<' => 3 )) => foo < 3
-                return array($this->quote($col) . " $op ?", array($v));
+                if ( SQL_Maker::is_scalar($v) ) {
+                    // make_term('foo', array('<', array('DATE_SUB(NOW(), INTERVAL 3 DAY)')))
+                    return array($this->quote($col) . " $op " . $v->raw(), array());
+                }
+                else {
+                    // make_term('foo', array( '<' => 3 )) => foo < 3
+                    return array($this->quote($col) . " $op ?", array($v));
+                }
             }
         }
         else if ( is_array( $val ) ) {
@@ -245,5 +251,9 @@ OUT BIND:  array()
 IN TODO:        array('foo_id', sql_type(\3, SQL_INTEGER)]
 OUT QUERY TODO: '`foo_id` = ?'
 OUT BIND TODO:  sql_type(\3, SQL_INTEGER)
+
+IN:        array('created_on', array('>' => SQL_Maker::scalar('DATE_SUB(NOW(), INTERVAL 1 DAY)')))
+OUT QUERY: '`created_on` > DATE_SUB(NOW(), INTERVAL 1 DAY)'
+OUT BIND: array()
 
 */

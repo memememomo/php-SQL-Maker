@@ -4,7 +4,7 @@ ini_set('include_path',
         .PATH_SEPARATOR
         .dirname(__FILE__).'/../../lib');
 
-require('SQL/Maker.php');
+require_once('SQL/Maker.php');
 
 
 class WhereTest extends PHPUnit_Framework_TestCase {
