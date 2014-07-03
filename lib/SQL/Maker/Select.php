@@ -6,7 +6,7 @@ require_once('SQL/Maker/Condition.php');
 
 class SQL_Maker_Select {
     public $prefix, $new;
-    public $distinct, $for_update, $quote_char, $name_sep, $new_line, $offset, $limit, $where, $having, $subqueries;
+    public $distinct, $for_update, $quote_char, $name_sep, $new_line, $offset, $limit, $where, $having, $subqueries, $strict;
 
     public function offset($offset) {
         if ($offset) {
@@ -48,14 +48,15 @@ class SQL_Maker_Select {
         $this->initArg('name_sep', $args, "");
         $this->initArg('new_line', $args, "\n");
         $this->initArg('subqueries', $args, array());
+        $this->initArg('strict', $args, 0);
     }
 
     public function newCondition() {
         return new SQL_Maker_Condition(array(
-                                             'quote_char' => $this->quote_char,
-                                             'name_sep'   => $this->name_sep,
-                                             )
-                                       );
+            'quote_char' => $this->quote_char,
+            'name_sep'   => $this->name_sep,
+            'strict'     => $this->strict,
+        ));
     }
 
     public function bind() {

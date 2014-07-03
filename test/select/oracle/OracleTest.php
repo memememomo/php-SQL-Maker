@@ -1,10 +1,4 @@
 <?php
-ini_set('include_path',
-        ini_get('include_path')
-        .PATH_SEPARATOR
-        .dirname(__FILE__).'/../../../lib');
-
-require_once('SQL/Maker/Select/Oracle.php');
 
 class OracleTest extends PHPUnit_Framework_TestCase {
 
