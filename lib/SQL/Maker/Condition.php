@@ -1,7 +1,9 @@
 <?php
 
+require_once('SQL/Maker.php');
+
 class SQL_Maker_Condition {
-    public $sql, $bind, $quote_char, $name_sep;
+    public $sql, $bind, $quote_char, $name_sep, $strict;
 
     public function __construct($args = array()) {
         $this->sql =
@@ -23,6 +25,11 @@ class SQL_Maker_Condition {
             array_key_exists('name_sep', $args)
             ? $args['name_sep']
             : '';
+
+        $this->strict =
+            array_key_exists('strict', $args)
+            ? $args['strict']
+            : 0;
     }
 
     private function quote($label) {
@@ -35,6 +42,15 @@ class SQL_Maker_Condition {
     }
 
     private function makeTerm($col, $val) {
+
+        if (is_object($val) && ! SQL_Maker::is_scalar($val)) {
+            $self = $this;
+            return array($val->asSql($col, function($arg) use ($self) { return $self->quote($arg); }), $val->bind());
+        }
+
+        if ( (is_array($val) || is_scalar($val)) && $this->strict ) {
+            throw new Exception("cannot pass in a ref as argument in strict mode");
+        }
 
         if ( is_array( $val ) &&  SQL_Maker_Util::is_hash( $val ) ) {
             foreach ($val as $op => $v) { }
@@ -256,4 +272,78 @@ IN:        array('created_on', array('>' => SQL_Maker::scalar('DATE_SUB(NOW(), I
 OUT QUERY: '`created_on` > DATE_SUB(NOW(), INTERVAL 1 DAY)'
 OUT BIND: array()
 
+
+It is also possible to use the functions exported by SQL_QueryMaker to define the conditions.
+
+IN:        array('foo', sql_in(array('bar','baz')))
+OUT QUERY: '`foo` IN (?,?)'
+OUT BIND:  array('bar','baz')
+
+IN:        array('foo', sql_lt(3))
+OUT QUERY: '`foo` < ?'
+OUT BIND:  array(3)
+
+IN:        array('foo', sql_not_in(array('bar','baz')))
+OUT QUERY: '`foo` NOT IN (?,?)'
+OUT BIND:  array('bar','baz')
+
+IN:        array('foo', sql_ne('bar'))
+OUT QUERY: '`foo` != ?'
+OUT BIND:  array('bar')
+
+IN:        array('foo', sql_is_not_null())
+OUT QUERY: '`foo` IS NOT NULL'
+OUT BIND:  array()
+
+IN:        array('foo', sql_between('1','2'))
+OUT QUERY: '`foo` BETWEEN ? AND ?'
+OUT BIND:  array('1','2')
+
+IN:        array('foo', sql_like('xaic%'))
+OUT QUERY: '`foo` LIKE ?'
+OUT BIND:  array('xaic%')
+
+IN:        array('foo', sql_or(array(sql_gt('bar'), sql_lt('baz'))))
+OUT QUERY: '(`foo` > ?) OR (`foo` < ?)'
+OUT BIND:  array('bar','baz')
+
+IN:        array('foo', sql_and(array(sql_gt('bar'), sql_lt('baz'))))
+OUT QUERY: '(`foo` > ?) AND (`foo` < ?)'
+OUT BIND:  array('bar','baz')
+
+IN:        array('foo_id', sql_op('IN (SELECT foo_id FROM bar WHERE t=?)',array(44)))
+OUT QUERY: '`foo_id` IN (SELECT foo_id FROM bar WHERE t=?)'
+OUT BIND:  array('44')
+
+IN:        array('foo_id', sql_in(array(sql_raw('SELECT foo_id FROM bar WHERE t=?',array(44)))))
+OUT QUERY: '`foo_id` IN ((SELECT foo_id FROM bar WHERE t=?))'
+OUT BIND:  array('44')
+
+IN:        array('foo_id', sql_op('MATCH (@) AGAINST (?)',array('apples')))
+OUT QUERY: 'MATCH (`foo_id`) AGAINST (?)'
+OUT BIND:  array('apples')
+
+IN:        array('foo_id', null)
+OUT QUERY: '`foo_id` IS NULL'
+OUT BIND:  array()
+
+IN:        array('foo_id',sql_in(array()))
+OUT QUERY: '0=1'
+OUT BIND:  array()
+
+IN:        array('foo_id',sql_not_in(array()))
+OUT QUERY: '1=1'
+OUT BIND:  array()
+
+IN TODO:        array('foo_id', sql_type(\3, SQL_INTEGER))
+OUT QUERY TODO: '`foo_id` = ?'
+OUT BIND TODO:  sql_type(\3, SQL_INTEGER)
+
+IN TODO:        ('foo_id', sql_in((sql_type(\3, SQL_INTEGER))))
+OUT QUERY TODO: '`foo_id` IN (?)'
+OUT BIND TODO:  sql_type(\3, SQL_INTEGER)
+
+IN:        array('created_on', sql_gt(sql_raw('DATE_SUB(NOW(), INTERVAL 1 DAY)', array())) )
+OUT QUERY: '`created_on` > DATE_SUB(NOW(), INTERVAL 1 DAY)'
+OUT BIND:
 */

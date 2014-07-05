@@ -5,6 +5,7 @@ ini_set('include_path',
         .dirname(__FILE__).'/../lib');
 
 require_once('SQL/Maker.php');
+require_once('SQL/QueryMaker.php');
 
 class InsertTest extends PHPUnit_Framework_TestCase {
 
@@ -80,6 +81,13 @@ class InsertTest extends PHPUnit_Framework_TestCase {
 
     }
 
+    public function testDriverSqliteTerm() {
+        $builder = new SQL_Maker(array('driver' => 'sqlite'));
+        list($sql, $binds) = $builder->insert('foo', array('bar' => 'baz', 'john' => 'man', 'created_on' => array('NOW()'), 'updated_on' => array('FROM_UNIXTIME(?)', 1302536204)));
+        $this->assertEquals("INSERT INTO \"foo\"\n(\"bar\", \"john\", \"created_on\", \"updated_on\")\nVALUES (?, ?, NOW(), FROM_UNIXTIME(?))", $sql);
+        $this->assertEquals('baz,man,1302536204', implode(',',$binds));
+    }
+
 
     // driver mysql
     public function testDriverMysqlHash() {
@@ -152,10 +160,12 @@ class InsertTest extends PHPUnit_Framework_TestCase {
 
     }
 
+    public function testDriverMysqlTerm() {
+        $builder = new SQL_Maker(array('driver' => 'mysql'));
+        list($sql, $binds) = $builder->insert('foo', array('bar' => 'baz', 'john' => 'man', 'created_on' => array('NOW()'), 'updated_on' => array('FROM_UNIXTIME(?)', 1302536204)));
+        $this->assertEquals("INSERT INTO `foo`\n(`bar`, `john`, `created_on`, `updated_on`)\nVALUES (?, ?, NOW(), FROM_UNIXTIME(?))", $sql);
+        $this->assertEquals('baz,man,1302536204', implode(',',$binds));
+    }
 }
-
-
-
-
 
 

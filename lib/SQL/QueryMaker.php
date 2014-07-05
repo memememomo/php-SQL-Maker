@@ -65,17 +65,17 @@ function sql_not() {
 }
 
 function sql_op() {
-    $_args = func_get_args();
+    $fn_args = func_get_args();
 
-    $args = array_pop($_args);
-    $expr = array_pop($_args);
+    $args = array_pop($fn_args);
+    $expr = array_pop($fn_args);
 
     list($num_args, $builder) = SQL_QueryMaker::_compileBuilder($expr);
     if ( $num_args != count($args) ) {
         Throw new Exception("the operator expects {$num_args} but got " . count($args));
     }
 
-    return _sql_op("sql_op", $builder, array_shift($_args), $args);
+    return _sql_op("sql_op", $builder, array_shift($fn_args), $args);
 }
 
 function sql_raw($sql, $bind) {
@@ -148,6 +148,7 @@ function _call_andor($fn, $fn_args) {
 function _call_in($fn, $fn_args) {
     $op = $fn;
     $op = strtoupper(preg_replace('/^sql_/', '', $op));
+    $op = preg_replace('/_/', ' ', $op);
 
     $args = array_pop($fn_args);
     if ( ! is_array($args) ) {

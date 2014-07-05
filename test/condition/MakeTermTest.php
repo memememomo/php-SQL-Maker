@@ -6,6 +6,7 @@ ini_set('include_path',
         .dirname(__FILE__).'/../../lib');
 
 require_once('SQL/Maker.php');
+require_once('SQL/QueryMaker.php');
 
 
 class MakeTermTest extends PHPUnit_Framework_TestCase {
@@ -43,13 +44,12 @@ class MakeTermTest extends PHPUnit_Framework_TestCase {
 
 
     public function check($source, $expected_term, $expected_bind) {
-
         $cond = new SQL_Maker_Condition(
-                                        array(
-                                              'quote_char' => '`',
-                                              'name_sep'   => '.',
-                                              )
-                                        );
+            array(
+                  'quote_char' => '`',
+                  'name_sep'   => '.',
+            )
+        );
 
         $cond->add($source[0], $source[1]);
         $sql = $cond->asSql();

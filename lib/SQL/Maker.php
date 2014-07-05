@@ -8,7 +8,7 @@ require_once('SQL/Maker/Util.php');
 class SQL_Maker {
     const VERSION = '0.01';
 
-    public $quote_char, $name_sep, $new_line, $driver, $select_class;
+    public $quote_char, $name_sep, $new_line, $strict, $driver, $select_class;
 
     public function __construct($args) {
         if ( ! array_key_exists('driver', $args) ) {
@@ -42,6 +42,11 @@ class SQL_Maker {
             ? $args['new_line']
             : "\n";
 
+        $this->strict =
+            array_key_exists('srict', $args)
+            ? $args['strict']
+            : 0;
+
         $this->driver = $driver;
     }
 
@@ -49,6 +54,7 @@ class SQL_Maker {
         return new SQL_Maker_Condition(array(
                                              'quote_char' => $this->quote_char,
                                              'name_sep'   => $this->name_sep,
+                                             'strict'     => $this->strict,
                                              ));
     }
 
@@ -59,6 +65,7 @@ class SQL_Maker {
                                             'name_sep'   => $this->name_sep,
                                             'quote_char' => $this->quote_char,
                                             'new_line'   => $this->new_line,
+                                            'strict'     => $this->strict,
                                             ),
                                       $args
                                       )
@@ -91,25 +98,36 @@ class SQL_Maker {
             }
 
             $quoted_columns[] = $this->quote($col);
-            if (is_array($val)) {
-                $count = count($val);
-
-                if ($count == 1) {
-                    // $builder->insert(foo, array(created_on => array('NOW()')))
-                    $columns[] = $val[0];
-                } else if ($count >= 2) {
-                    // $builder->insert(foo, array(created_on => array('UNIX_TIMESTAMP(?)', '2011-04-12 00:34:12')))
-                    $stmt = array_shift($val);
-                    $sub_bind = $val;
-
-                    $columns[] = $stmt;
-                    $bind_columns = array_merge($bind_columns, $sub_bind);
-                }
+            if (is_object($val)) {
+                $self = $this;
+                $columns[] = $val->asSql(null, function($arg) use ($self) { return $self->_quote($arg); });
+                $bind_columns = array_merge($bind_columns, $val->bind());
             }
             else {
-                // normal values
-                $columns[] = '?';
-                $bind_columns[] = $val;
+                if ((is_array($val) || is_scalar($val)) && $this->strict) {
+                    throw new Exception("cannot pass in a ref as argument in strict mode");
+                }
+
+                if (is_array($val)) {
+                    $count = count($val);
+
+                    if ($count == 1) {
+                        // $builder->insert(foo, array(created_on => array('NOW()')))
+                        $columns[] = $val[0];
+                    } else if ($count >= 2) {
+                        // $builder->insert(foo, array(created_on => array('UNIX_TIMESTAMP(?)', '2011-04-12 00:34:12')))
+                        $stmt = array_shift($val);
+                        $sub_bind = $val;
+
+                        $columns[] = $stmt;
+                        $bind_columns = array_merge($bind_columns, $sub_bind);
+                    }
+                }
+                else {
+                    // normal values
+                    $columns[] = '?';
+                    $bind_columns[] = $val;
+                }
             }
         }
 
@@ -154,26 +172,37 @@ class SQL_Maker {
             }
 
             $quoted_col = $this->quote($col);
-            if (is_array($val)) {
-                $count = count($val);
-
-                if ($count == 1) {
-                    // $builder->update('foo', array( created_on => array('NOW()') ))
-                    $columns[] = "$quoted_col = " . $val[0];
-                }
-                else if ($count >= 2) {
-                    // $builder->update('foo', array( 'VALUES(foo) + ?', 10 ) )
-                    $stmt = array_shift($val);
-                    $sub_bind = $val;
-
-                    $columns[] = "$quoted_col = " . $stmt;
-                    $bind_columns = array_merge($bind_columns, $sub_bind);
-                }
+            if (is_object($val)) {
+                $self = $this;
+                $columns[] = $val->asSql(null, function($arg) use ($self) { return $self->_quote($arg); });
+                $bind_columns = array_merge($bind_columns, $val->bind());
             }
             else {
-                // normal values
-                $columns[] = "$quoted_col = ?";
-                $bind_columns[] = $val;
+                if ((is_array($val) || is_scalar($val)) && $this->strict) {
+                    throw new Exception("cannot pass in a ref as argument in strict mode");
+                }
+
+                if (is_array($val)) {
+                    $count = count($val);
+
+                    if ($count == 1) {
+                        // $builder->update('foo', array( created_on => array('NOW()') ))
+                        $columns[] = "$quoted_col = " . $val[0];
+                    }
+                    else if ($count >= 2) {
+                        // $builder->update('foo', array( 'VALUES(foo) + ?', 10 ) )
+                        $stmt = array_shift($val);
+                        $sub_bind = $val;
+
+                        $columns[] = "$quoted_col = " . $stmt;
+                        $bind_columns = array_merge($bind_columns, $sub_bind);
+                    }
+                }
+                else {
+                    // normal values
+                    $columns[] = "$quoted_col = ?";
+                    $bind_columns[] = $val;
+                }
             }
         }
 
@@ -328,7 +357,7 @@ class SQL_Maker {
     }
 
 
-    public function is_scalar($string) {
+    public static function is_scalar($string) {
         if ( is_object( $string ) ) {
             $class_name = get_class( $string );
             if ( strcmp($class_name, 'SQL_Maker_Scalar') === 0 ) {
@@ -342,7 +371,6 @@ class SQL_Maker {
             return false;
         }
     }
-
 }
 
 
