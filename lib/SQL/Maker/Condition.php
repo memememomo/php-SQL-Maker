@@ -32,7 +32,7 @@ class SQL_Maker_Condition {
             : 0;
     }
 
-    private function quote($label) {
+    public function quote($label) {
         if ( is_array($label) ) {
             return $label[0];
         }

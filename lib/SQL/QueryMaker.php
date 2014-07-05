@@ -297,7 +297,8 @@ class SQL_QueryMaker {
             $this->bindColumn($supplied_colname);
         }
         if ( is_null($quote_cb) ) {
-            $quote_cb = function($label) { return $this->quoteIdentifier($label); };
+            $self = $this;
+            $quote_cb = function($label) use ($self) { return $self->quoteIdentifier($label); };
         }
         $_as_sql = $this->_as_sql;
         return $_as_sql($this->_column, $quote_cb);
