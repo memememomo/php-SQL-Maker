@@ -7,7 +7,7 @@ ini_set('include_path',
 
 require_once('SQL/Maker.php');
 
-class InsertTest extends PHPUnit_Framework_TestCase {
+class NewLineTest extends PHPUnit_Framework_TestCase {
 
     // empty string
     public function testEmptyString() {

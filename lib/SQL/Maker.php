@@ -6,6 +6,8 @@ require_once('SQL/Maker/Condition.php');
 require_once('SQL/Maker/Util.php');
 
 class SQL_Maker {
+    const VERSION = '0.01';
+
     public $quote_char, $name_sep, $new_line, $driver, $select_class;
 
     public function __construct($args) {
