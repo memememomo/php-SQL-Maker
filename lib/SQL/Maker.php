@@ -6,7 +6,7 @@ require_once('SQL/Maker/Condition.php');
 require_once('SQL/Maker/Util.php');
 
 class SQL_Maker {
-    const VERSION = '0.01';
+    const VERSION = '0.02';
 
     public $quote_char, $name_sep, $new_line, $strict, $driver, $select_class;
 
