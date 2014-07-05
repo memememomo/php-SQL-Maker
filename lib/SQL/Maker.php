@@ -52,24 +52,23 @@ class SQL_Maker {
 
     public function newCondition() {
         return new SQL_Maker_Condition(array(
-                                             'quote_char' => $this->quote_char,
-                                             'name_sep'   => $this->name_sep,
-                                             'strict'     => $this->strict,
-                                             ));
+            'quote_char' => $this->quote_char,
+            'name_sep'   => $this->name_sep,
+            'strict'     => $this->strict,
+        ));
     }
 
     public function newSelect($args = array()) {
         $class = $this->select_class;
         return new $class(array_merge(
-                                      array(
-                                            'name_sep'   => $this->name_sep,
-                                            'quote_char' => $this->quote_char,
-                                            'new_line'   => $this->new_line,
-                                            'strict'     => $this->strict,
-                                            ),
-                                      $args
-                                      )
-                          );
+            array(
+                'name_sep'   => $this->name_sep,
+                'quote_char' => $this->quote_char,
+                'new_line'   => $this->new_line,
+                'strict'     => $this->strict,
+            ),
+            $args
+        ));
     }
 
 
@@ -104,7 +103,7 @@ class SQL_Maker {
                 $bind_columns = array_merge($bind_columns, $val->bind());
             }
             else {
-                if ((is_array($val) || is_scalar($val)) && $this->strict) {
+                if ((is_array($val) || self::is_scalar($val)) && $this->strict) {
                     throw new Exception("cannot pass in a ref as argument in strict mode");
                 }
 
@@ -178,7 +177,7 @@ class SQL_Maker {
                 $bind_columns = array_merge($bind_columns, $val->bind());
             }
             else {
-                if ((is_array($val) || is_scalar($val)) && $this->strict) {
+                if ((is_array($val) || self::is_scalar($val)) && $this->strict) {
                     throw new Exception("cannot pass in a ref as argument in strict mode");
                 }
 
