@@ -97,11 +97,11 @@ function _call_andor($fn, $fn_args) {
         }
 
         $conds = array();
-        foreach ($args as $column => $value) {
+        foreach ($args as $col => $value) {
             if (is_object($value) && method_exists($value, 'bindColumn')) {
-                $value->bindColumn($column);
+                $value->bindColumn($col);
             } else {
-                $value = sql_eq($column, $value);
+                $value = sql_eq($col, $value);
             }
             $conds []= $value;
         }
