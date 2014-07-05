@@ -1,59 +1,67 @@
 <?php
 
 function sql_and() {
-    _call_andor(__FUNCTION__, func_get_args());
+    return _call_andor(__FUNCTION__, func_get_args());
 }
 
 function sql_or() {
-    _call_andor(__FUNCTION__, func_get_args());
+    return _call_andor(__FUNCTION__, func_get_args());
+}
+
+function sql_in() {
+    return _call_in(__FUNCTION__, func_get_args());
+}
+
+function sql_not_in() {
+    return _call_in(__FUNCTION__, func_get_args());
 }
 
 function sql_is_null() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_is_not_null() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_eq() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_ne() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_lt() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_gt() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_le() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_ge() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_like() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_between() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_not_between() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_not() {
-    _call_fnop(__FUNCTION__, func_get_args());
+    return _call_fnop(__FUNCTION__, func_get_args());
 }
 
 function sql_op() {
@@ -62,7 +70,7 @@ function sql_op() {
     $args = array_pop($_args);
     $expr = array_pop($_args);
 
-    list($num_args, $builder) = _compile_builder($expr);
+    list($num_args, $builder) = SQL_QueryMaker::_compileBuilder($expr);
     if ( $num_args != count($args) ) {
         Throw new Exception("the operator expects {$num_args} but got " . count($args));
     }
@@ -83,7 +91,7 @@ function _call_andor($fn, $fn_args) {
     $args = array_pop($fn_args);
     $column = array_shift($fn_args);
 
-    if (is_array($args)) {
+    if (_is_hash($args)) {
         if ( ! is_null($column) ) {
             throw new Exception("cannot specify the column name as another argument when the conditions are listed using hashref");
         }
@@ -108,25 +116,25 @@ function _call_andor($fn, $fn_args) {
     $bind = array();
     foreach ($args as $arg) {
         if (is_object($arg) && method_exists($arg, 'asSql')) {
-            $bind []= $arg->bind();
+            $bind = array_merge($bind, $arg->bind());
         } else {
             $bind []= $arg;
         }
     }
 
     // build and return the compiler
-    return SQL_QueryMaker::_new($column, function($column, $quote_cb) use ($args, $fn) {
-        if ( count($args) == 0 ) {
+    return SQL_QueryMaker::_new($column, function($column, $quote_cb) use ($args, $fn, $op) {
+        if ( count($args) === 0 ) {
             return $op === "AND" ? '0=1' : '1=1';
         }
 
         $term = array();
         foreach ($args as $arg) {
             if (is_object($arg) && method_exists($arg, 'asSql')) {
-                list($term, $bind) = $arg->asSql($column, $quote_cb);
-                $term []= "($term)";
+                $t = $arg->asSql($column, $quote_cb);
+                $term []= "($t)";
             } else {
-                if ( ! is_null($column) ) {
+                if ( is_null($column) ) {
                     throw new Exception("no column binding for $fn");
                 }
                 $term []= '(' . $quote_cb($column) . ' = ?)';
@@ -151,15 +159,15 @@ function _call_in($fn, $fn_args) {
     $bind = array();
     foreach ($args as $arg) {
         if (is_object($arg) && method_exists($arg, 'asSql')) {
-            $bind []= $arg->bind();
+            $bind = array_merge($bind, $arg->bind());
         } else {
             $bind []= $arg;
         }
     }
 
     // build and return the compiler
-    return SQL_QueryMaker::_new($column, function($column, $quote_cb) use ($args, $fn) {
-        if ( ! is_null($column) ) {
+    return SQL_QueryMaker::_new($column, function($column, $quote_cb) use ($args, $fn, $op) {
+        if ( is_null($column) ) {
             throw new Exception("no column binding for $fn");
         }
 
@@ -169,9 +177,9 @@ function _call_in($fn, $fn_args) {
 
         $term = array();
         foreach ($args as $arg) {
-            if (is_object($arg) && method_exists('asSql')) {
-                $term = $arg->asSql(null, $quote_cb);
-                $term []= $term === '?' ? $term : "($term)"; // emit parens only when necessary
+            if (is_object($arg) && method_exists($arg, 'asSql')) {
+                $t = $arg->asSql(null, $quote_cb);
+                $term []= $t === '?' ? $t : "($t)"; // emit parens only when necessary
             } else {
                 $term []= '?';
             }
@@ -182,17 +190,20 @@ function _call_in($fn, $fn_args) {
 }
 
 function _call_fnop($fn, $fn_args) {
+
     $FNOP = array(
-        'IsNull' => 'IS NULL',
-        'IsNotNull' => 'IS NOT NULL',
-        'Eq' => '= ?',
-        'Ne' => '!= ?',
-        'Lt' => '< ?',
-        'Gt' => '> ?',
-        'Like' => 'LIKE ?',
-        'Between' => 'BETWEEN ? AND ?',
-        'NotBetween' => 'NOT BETWEEN ? AND ?',
-        'Not' => 'NOT @',
+        'is_null' => 'IS NULL',
+        'is_not_null' => 'IS NOT NULL',
+        'eq' => '= ?',
+        'ne' => '!= ?',
+        'lt' => '< ?',
+        'gt' => '> ?',
+        'le' => '<= ?',
+        'ge' => '>= ?',
+        'like' => 'LIKE ?',
+        'between' => 'BETWEEN ? AND ?',
+        'not_between' => 'NOT BETWEEN ? AND ?',
+        'not' => 'NOT @',
     );
 
     $op = preg_replace('/^sql_/', '', $fn);
@@ -205,10 +216,12 @@ function _call_fnop($fn, $fn_args) {
         throw new Exception("the operator expects {$num_args} parameters, but got " . count($fn_args));
     }
 
-    return _sql_op($fn, $builder, $column, $fn_args);
+    $term = _sql_op($fn, $builder, $column, $fn_args);
+
+    return $term;
 }
 
-function _sql_op($builder, $column, $args) {
+function _sql_op($fn, $builder, $column, $args) {
     return SQL_QueryMaker::_new($column, function($column, $quote_cb) use ($builder) {
         if ( is_null($column) ) {
             Throw new Exception("no column binding for $fn(args...)");
@@ -216,6 +229,14 @@ function _sql_op($builder, $column, $args) {
         $term = $builder($quote_cb($column));
         return $term;
     }, $args);
+}
+
+function _is_hash($array) {
+    $i = 0;
+    foreach ($array as $k => $dummy) {
+        if ( $k !== $i++ ) return true;
+    }
+    return false;
 }
 
 
@@ -232,7 +253,7 @@ class SQL_QueryMaker {
         }
 
         $num_args = substr_count($expr, '?');
-        $exprs = explode('@', $expr, -1);
+        $exprs = explode('@', $expr);
         $builder = function ($arg) use ($exprs) {
             return implode($arg, $exprs);
         };
@@ -243,7 +264,7 @@ class SQL_QueryMaker {
     public static function _new($column, $as_sql, $bind) {
         foreach ($bind as $b) {
             if ( is_array($b) ) {
-                Throw new Exception("cannot bind an array");
+                throw new Exception("cannot bind an array");
             }
         }
 
@@ -264,13 +285,13 @@ class SQL_QueryMaker {
     public function bindColumn($column) {
         if ( ! is_null($column) ) {
             if ( ! is_null($this->_column) ) {
-                Throw new Exception('cannot rebind column for \`' . $this->_column . "` to: `$column`");
+                Throw new Exception('cannot rebind column for `' . $this->_column . "` to: `$column`");
             }
         }
         $this->_column = $column;
     }
 
-    public function asSql($supplied_colname, $quote_cb) {
+    public function asSql($supplied_colname = null, $quote_cb = null) {
         if ( ! is_null($supplied_colname) ) {
             $this->bindColumn($supplied_colname);
         }
@@ -296,27 +317,27 @@ class SQL_QueryMaker {
 
 
 /* CHEAT SHEET
-IN:        sql_eq(array('foo' => 'bar'))
+IN:        sql_eq('foo', 'bar')
 OUT QUERY: '`foo` = ?'
 OUT BIND:  array('bar')
 
-IN:        sql_in(array('foo' => array('bar', 'baz')))
+IN:        sql_in('foo', array('bar', 'baz'))
 OUT QUERY: '`foo` IN (?,?)'
 OUT BIND:  array('bar','baz')
 
-IN:        sql_and(array(sql_eq(array('foo' => 'bar')), sql_eq(array('baz' => 123))))
+IN:        sql_and(array(sql_eq('foo', 'bar'), sql_eq('baz', 123)))
 OUT QUERY: '(`foo` = ?) AND (`baz` = ?)'
 OUT BIND:  array('bar',123)
 
-IN:        sql_and(array('foo' => array(sql_ge(3), sql_lt(5))))
+IN:        sql_and('foo', array(sql_ge(3), sql_lt(5)))
 OUT QUERY: '(`foo` >= ?) AND (`foo` < ?)'
 OUT BIND:  array(3,5)
 
-IN:        sql_or(array(sql_eq(array('foo' => 'bar')), sql_eq(array('baz' => 123))))
+IN:        sql_or(array(sql_eq('foo', 'bar'), sql_eq('baz', 123)))
 OUT QUERY: '(`foo` = ?) OR (`baz` = ?)'
 OUT BIND:  array('bar',123)
 
-IN:        sql_or(array('foo' => array('bar', 'baz')))
+IN:        sql_or('foo', array('bar', 'baz'))
 OUT QUERY: '(`foo` = ?) OR (`foo` = ?)'
 OUT BIND:  array('bar','baz')
 
@@ -340,11 +361,11 @@ IN:        sql_op('apples', 'MATCH (@) AGAINST (?)', array('oranges'))
 OUT QUERY: 'MATCH (`apples`) AGAINST (?)'
 OUT BIND:  array('oranges')
 
-IN:        sql_raw('SELECT * FROM t WHERE id=?',123)
+IN:        sql_raw('SELECT * FROM t WHERE id=?',array(123))
 OUT QUERY: 'SELECT * FROM t WHERE id=?'
 OUT BIND:  array(123)
 
-IN:        sql_in('foo', => array(123,sql_raw('SELECT id FROM t WHERE cat=?',5)))
+IN:        sql_in('foo', array(123,sql_raw('SELECT id FROM t WHERE cat=?',array(5))))
 OUT QUERY: '`foo` IN (?,(SELECT id FROM t WHERE cat=?))'
 OUT BIND:  array(123,5)
 */
