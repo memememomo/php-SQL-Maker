@@ -48,7 +48,7 @@ class SQL_Maker_Condition {
             return array($val->asSql($col, function($arg) use ($self) { return $self->quote($arg); }), $val->bind());
         }
 
-        if ( (is_array($val) || is_scalar($val)) && $this->strict ) {
+        if ( (is_array($val) || SQL_Maker::is_scalar($val)) && $this->strict ) {
             throw new Exception("cannot pass in a ref as argument in strict mode");
         }
 

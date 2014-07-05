@@ -369,7 +369,7 @@ class SQL_Maker {
     }
 
 
-    public function scalar($str) {
+    public static function scalar($str) {
         return new SQL_Maker_Scalar($str);
     }
 

@@ -1,11 +1,4 @@
 <?php
-ini_set('include_path',
-        ini_get('include_path')
-        .PATH_SEPARATOR
-        .dirname(__FILE__).'/../../lib');
-ini_set('date.timezone', 'Asia/Tokyo');
-
-require_once('SQL/QueryMaker.php');
 
 class MyDateTime extends DateTime {
     public function __tostring() {

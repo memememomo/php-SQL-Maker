@@ -1,12 +1,5 @@
 <?php
 
-ini_set('include_path',
-        ini_get('include_path')
-        .PATH_SEPARATOR
-        .dirname(__FILE__).'/../../lib');
-
-require_once('SQL/QueryMaker.php');
-
 class AndUsingHashTest extends PHPUnit_Framework_TestCase {
 
     public function testAndUsingHashTest() {
