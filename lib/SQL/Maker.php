@@ -43,7 +43,7 @@ class SQL_Maker {
             : "\n";
 
         $this->strict =
-            array_key_exists('srict', $args)
+            array_key_exists('strict', $args)
             ? $args['strict']
             : 0;
 
@@ -214,11 +214,17 @@ class SQL_Maker {
         return array($sql, $bind_columns);
     }
 
-    public function makeWhereClause($where) {
-        $w = new SQL_Maker_Condition(array(
-                                           'quote_char' => $this->quote_char,
-                                           'name_sep'   => $this->name_sep
-                                           ));
+    public function makeWhereCondition($where) {
+
+        if ( ! $where ) {
+            return $this->newCondition();
+        }
+
+        if (is_object($where) && method_exists($where, 'asSql')) {
+            return $where;
+        }
+
+        $w = $this->newCondition();
 
         $where = SQL_Maker_Util::to_array($where);
         for ($i = 0; $i < count($where); $i++) {
@@ -232,6 +238,18 @@ class SQL_Maker {
 
             $w->add($col, $val);
         }
+
+        return $w;
+    }
+
+    public function makeWhereClause($where) {
+
+        if (is_null($where)) {
+            return array('', array());
+        }
+
+        $w = $this->makeWhereCondition($where);
+
         $sql = $w->asSql(1);
         return
             $sql
