@@ -179,3 +179,7 @@ See following articles for more details (perl version)
        　->asSql();
        　
       　 // => "SELECT foo, bar, baz FROM table
+
+# Copyright
+
+Copyright (c) 2011 Uchiko. See [LICENSE](LICENSE) for details.
