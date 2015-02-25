@@ -4,7 +4,7 @@ require_once('SQL/Maker.php');
 
 class SQL_Maker_Select_Oracle extends SQL_Maker_Select {
 
-    public function asLimit() {
+    public function asSqlLimit() {
         return '';
     }
 
